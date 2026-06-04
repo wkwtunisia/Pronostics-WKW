@@ -3,47 +3,175 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Pronostics WKW - Admin & Paris</title>
+    <title>Pronostics WKW - Plateforme de Paris Football</title>
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         body {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0a0f1e 0%, #0f172a 50%, #1e1b4b 100%);
             min-height: 100vh;
             padding: 20px;
+            position: relative;
+            overflow-x: hidden;
         }
 
+        /* Animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 50%, rgba(59,130,246,0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 80% 80%, rgba(139,92,246,0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Floating particles animation */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.05); }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 5px rgba(59,130,246,0.3); }
+            50% { box-shadow: 0 0 20px rgba(59,130,246,0.6); }
+        }
+
+        @keyframes rotateLogo {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Auth Cards */
         .auth-container {
             max-width: 500px;
             margin: 50px auto;
+            position: relative;
+            z-index: 1;
+            animation: slideIn 0.5s ease-out;
         }
 
         .card {
-            background: white;
-            border-radius: 24px;
-            padding: 40px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 32px;
+            padding: 45px 40px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 35px 60px -15px rgba(0,0,0,0.6);
         }
 
         .card h2 {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 35px;
             color: #1e293b;
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Logo container */
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .logo-wrapper {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(139,92,246,0.1));
+            padding: 12px 24px;
+            border-radius: 60px;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulse 2s infinite;
+        }
+
+        .logo-icon i {
+            font-size: 28px;
+            color: white;
+        }
+
+        .logo-text {
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .logo-subtitle {
+            font-size: 12px;
+            color: #64748b;
+            text-align: center;
+            margin-top: 5px;
         }
 
         .input-group {
-            margin-bottom: 20px;
+            margin-bottom: 22px;
         }
 
         .input-group label {
@@ -51,59 +179,92 @@
             margin-bottom: 8px;
             font-weight: 600;
             color: #334155;
+            font-size: 14px;
         }
 
         .input-group input, .input-group select {
             width: 100%;
-            padding: 12px 16px;
+            padding: 14px 18px;
             border: 2px solid #e2e8f0;
-            border-radius: 12px;
+            border-radius: 16px;
             font-size: 14px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
+            transform: scale(1.01);
         }
 
         .btn {
             width: 100%;
-            padding: 14px;
+            padding: 15px;
             border: none;
-            border-radius: 12px;
+            border-radius: 16px;
             font-size: 16px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
-            transition: 0.2s;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
 
-        .btn-primary { background: #3b82f6; color: white; }
-        .btn-primary:hover { background: #2563eb; }
-        .btn-success { background: #10b981; color: white; }
-        .btn-success:hover { background: #059669; }
-        .btn-warning { background: #f59e0b; color: white; }
-        .btn-danger { background: #ef4444; color: white; }
-        .btn-secondary { background: #64748b; color: white; }
-        .btn-secondary:hover { background: #475569; }
-        .btn-info { background: #8b5cf6; color: white; }
-        .btn-info:hover { background: #7c3aed; }
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-primary { background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(59,130,246,0.5); }
+        .btn-success { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+        .btn-success:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(16,185,129,0.5); }
+        .btn-danger { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; }
+        .btn-danger:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(239,68,68,0.5); }
+        .btn-warning { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
+        .btn-warning:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(245,158,11,0.5); }
 
         .switch-link {
             text-align: center;
-            margin-top: 20px;
+            margin-top: 25px;
             color: #64748b;
             cursor: pointer;
+            transition: color 0.3s;
         }
+        .switch-link:hover { color: #3b82f6; }
         .switch-link span { color: #3b82f6; font-weight: 600; }
 
         .message {
             padding: 12px;
-            border-radius: 12px;
+            border-radius: 16px;
             margin-top: 15px;
             text-align: center;
             display: none;
+            animation: slideIn 0.3s ease-out;
         }
         .error { background: #fee2e2; color: #dc2626; }
         .success { background: #d1fae5; color: #065f46; }
 
+        /* Dashboard Header */
         .dashboard-header {
-            background: white;
-            border-radius: 20px;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
             padding: 20px 30px;
             margin-bottom: 30px;
             display: flex;
@@ -111,187 +272,327 @@
             align-items: center;
             flex-wrap: wrap;
             gap: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            animation: slideIn 0.5s ease-out;
+            border: 1px solid rgba(255,255,255,0.3);
         }
-        .logo h2 { color: #1e293b; }
-        .logo span { color: #3b82f6; }
-        .user-info { display: flex; align-items: center; gap: 20px; }
 
+        .dashboard-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .dashboard-logo .logo-icon {
+            width: 45px;
+            height: 45px;
+        }
+
+        .dashboard-logo .logo-icon i {
+            font-size: 24px;
+        }
+
+        .dashboard-logo h2 {
+            font-size: 24px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            background: rgba(59,130,246,0.1);
+            padding: 10px 20px;
+            border-radius: 50px;
+        }
+
+        /* Admin Panels */
         .admin-panel {
-            background: white;
-            border-radius: 24px;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 28px;
             padding: 30px;
             margin-bottom: 30px;
+            animation: slideIn 0.5s ease-out;
+            border: 1px solid rgba(255,255,255,0.3);
+            transition: transform 0.3s;
         }
-        .form-group { margin-bottom: 20px; }
-        .form-group label { font-weight: 600; margin-bottom: 8px; display: block; }
 
-        .match-admin-card {
-            background: #f8fafc;
-            border-radius: 20px;
-            padding: 20px;
+        .admin-panel:hover {
+            transform: translateY(-3px);
+        }
+
+        .admin-panel h3 {
+            font-size: 22px;
             margin-bottom: 25px;
+            color: #1e293b;
+            border-left: 4px solid #3b82f6;
+            padding-left: 15px;
+        }
+
+        /* Match Cards */
+        .match-admin-card {
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            border-radius: 24px;
+            padding: 25px;
+            margin-bottom: 25px;
+            transition: all 0.3s;
             border: 1px solid #e2e8f0;
         }
+
+        .match-admin-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        }
+
         .match-title {
-            font-size: 20px;
-            font-weight: 700;
+            font-size: 22px;
+            font-weight: 800;
             margin-bottom: 15px;
             color: #0f172a;
         }
+
         .points-config {
-            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-            padding: 15px;
-            border-radius: 12px;
-            margin: 15px 0;
-        }
-        .points-config input {
-            width: 100px;
-            padding: 8px;
-            text-align: center;
-            border: 2px solid #d97706;
-            border-radius: 8px;
-            font-weight: 600;
-        }
-        .predictions-table {
-            width: 100%;
-            overflow-x: auto;
-            margin-top: 15px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            padding: 15px 20px;
             border-radius: 16px;
-            overflow: hidden;
-        }
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        th {
-            background: #f1f5f9;
-            font-weight: 600;
-        }
-        .point-badge {
-            background: #e0e7ff;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        .special-badge {
-            background: #fef3c7;
-            color: #92400e;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 600;
-            margin-left: 8px;
-        }
-        .validate-btn {
-            padding: 6px 12px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 12px;
-            margin: 2px;
-        }
-        .final-result {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            flex-wrap: wrap;
             margin: 15px 0;
-            padding: 15px;
-            background: #eef2ff;
-            border-radius: 12px;
         }
-        .final-result input {
-            width: 70px;
-            padding: 8px;
-            text-align: center;
-            border: 2px solid #cbd5e1;
-            border-radius: 8px;
-            font-size: 16px;
-        }
+
+        /* User Matches Grid */
         .matches-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
             gap: 25px;
+            animation: slideIn 0.5s ease-out;
         }
+
         .match-card {
-            background: white;
-            border-radius: 20px;
-            padding: 20px;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 25px;
+            transition: all 0.3s;
+            border: 1px solid rgba(255,255,255,0.3);
+            animation: glow 3s infinite;
         }
+
+        .match-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 25px 40px rgba(0,0,0,0.2);
+        }
+
         .match-teams {
-            font-size: 20px;
-            font-weight: 700;
+            font-size: 22px;
+            font-weight: 800;
             text-align: center;
-            padding: 15px;
-            background: #eef2ff;
-            border-radius: 12px;
-            margin-bottom: 15px;
+            padding: 18px;
+            background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+            border-radius: 20px;
+            margin-bottom: 20px;
+            color: #1e293b;
         }
+
         .score-display {
             text-align: center;
-            padding: 15px;
-            background: #f1f5f9;
-            border-radius: 12px;
+            padding: 18px;
+            background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+            border-radius: 20px;
             margin: 15px 0;
-            font-size: 18px;
-            font-weight: 600;
+            font-size: 20px;
+            font-weight: 700;
         }
-        .bet-info {
-            background: #d1fae5;
-            padding: 12px;
-            border-radius: 12px;
-            text-align: center;
-            margin-top: 10px;
-        }
-        .points-earned {
-            background: #fef3c7;
-            padding: 8px;
-            border-radius: 12px;
-            margin-top: 10px;
-            text-align: center;
-            font-weight: bold;
-            color: #b45309;
-        }
-        .hidden { display: none; }
-        .status-badge {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 600;
-        }
-        .status-open { background: #dbeafe; color: #1e40af; }
-        .status-closed { background: #fef3c7; color: #92400e; }
-        .user-stats-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px;
-            border-radius: 16px;
-            margin-bottom: 10px;
-        }
+
+        /* Ranking Table */
         .ranking-table {
             width: 100%;
             background: white;
-            border-radius: 16px;
+            border-radius: 20px;
             overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
-        .ranking-table th, .ranking-table td {
+
+        .ranking-table th {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            padding: 15px;
+            font-weight: 600;
+        }
+
+        .ranking-table td {
             padding: 12px;
             text-align: center;
+            border-bottom: 1px solid #e2e8f0;
         }
-        .gold { background: #fef3c7; color: #92400e; font-weight: bold; }
+
+        .ranking-table tr:hover {
+            background: #f1f5f9;
+            transition: 0.3s;
+        }
+
+        .gold {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            font-weight: bold;
+        }
+
+        .special-badge {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-left: 10px;
+            display: inline-block;
+            animation: pulse 1.5s infinite;
+        }
+
+        .point-badge {
+            background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+            padding: 5px 12px;
+            border-radius: 25px;
+            font-size: 13px;
+            font-weight: 700;
+            display: inline-block;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 25px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-left: 10px;
+        }
+
+        .status-open { background: #dbeafe; color: #1e40af; }
+        .status-closed { background: #fef3c7; color: #92400e; }
+
+        .final-result {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin: 15px 0;
+            padding: 18px;
+            background: linear-gradient(135deg, #eef2ff, #e0e7ff);
+            border-radius: 20px;
+        }
+
+        .final-result input {
+            width: 80px;
+            padding: 10px;
+            text-align: center;
+            border: 2px solid #cbd5e1;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .final-result input:focus {
+            border-color: #3b82f6;
+            outline: none;
+            transform: scale(1.05);
+        }
+
+        .validate-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            margin: 4px;
+            transition: all 0.3s;
+        }
+
+        .validate-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .score-inputs {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .score-input {
+            flex: 1;
+            text-align: center;
+        }
+
+        .score-input input {
+            width: 100%;
+            max-width: 100px;
+            padding: 12px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: 700;
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            margin: 0 auto;
+            transition: 0.3s;
+        }
+
+        .score-input input:focus {
+            border-color: #3b82f6;
+            transform: scale(1.05);
+            outline: none;
+        }
+
         .points-input-group {
             display: inline-flex;
-            gap: 15px;
+            gap: 20px;
             align-items: center;
+            flex-wrap: wrap;
             margin-top: 10px;
+        }
+
+        .points-input-group input {
+            width: 90px;
+            padding: 8px;
+            text-align: center;
+            border: 2px solid #d97706;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+        .hidden { display: none; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1e293b;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+        }
+
+        @media (max-width: 768px) {
+            .matches-grid {
+                grid-template-columns: 1fr;
+            }
+            .dashboard-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            .card {
+                padding: 30px 20px;
+            }
         }
     </style>
 </head>
@@ -299,26 +600,46 @@
     <!-- Auth Container -->
     <div id="authContainer" class="auth-container">
         <div id="loginForm" class="card">
-            <h2><i class="fas fa-futbol"></i> Connexion</h2>
-            <div class="input-group"><label>Email</label><input type="email" id="loginEmail"></div>
-            <div class="input-group"><label>Mot de passe</label><input type="password" id="loginPassword"></div>
-            <button class="btn btn-primary" id="loginBtn">Se connecter</button>
-            <div class="switch-link" id="showRegister">Pas de compte ? <span>Inscrivez-vous</span></div>
+            <div class="logo-container">
+                <div class="logo-wrapper">
+                    <div class="logo-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div>
+                        <div class="logo-text">WKW Automotive</div>
+                        <div class="logo-subtitle">Pronostics Football</div>
+                    </div>
+                </div>
+            </div>
+            <div class="input-group"><label><i class="fas fa-envelope"></i> Email</label><input type="email" id="loginEmail" placeholder="exemple@email.com"></div>
+            <div class="input-group"><label><i class="fas fa-lock"></i> Mot de passe</label><input type="password" id="loginPassword" placeholder="••••••"></div>
+            <button class="btn btn-primary" id="loginBtn"><i class="fas fa-sign-in-alt"></i> Se connecter</button>
+            <div class="switch-link" id="showRegister">Pas de compte ? <span>Inscrivez-vous gratuitement</span></div>
             <div id="loginMessage" class="message"></div>
         </div>
         <div id="registerForm" class="card" style="display: none;">
-            <h2><i class="fas fa-user-plus"></i> Inscription</h2>
-            <div class="input-group"><label>Nom complet</label><input type="text" id="regFullName"></div>
-            <div class="input-group"><label>Département</label>
+            <div class="logo-container">
+                <div class="logo-wrapper">
+                    <div class="logo-icon">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                    <div>
+                        <div class="logo-text">WKW Automotive</div>
+                        <div class="logo-subtitle">Rejoignez l'aventure</div>
+                    </div>
+                </div>
+            </div>
+            <div class="input-group"><label><i class="fas fa-user"></i> Nom complet</label><input type="text" id="regFullName" placeholder="Votre nom et prénom"></div>
+            <div class="input-group"><label><i class="fas fa-building"></i> Département</label>
                 <select id="regDepartment">
                     <option>Informatique</option><option>Logistique</option><option>RH</option><option>Finance</option>
                     <option>Achat</option><option>UAP 1</option><option>UAP 2</option><option>Qualité</option>
                     <option>Méthode</option><option>Amélioration Continue</option><option>Industriel</option><option>Contenu</option>
                 </select>
             </div>
-            <div class="input-group"><label>Email</label><input type="email" id="regEmail"></div>
-            <div class="input-group"><label>Mot de passe (6+ caractères)</label><input type="password" id="regPassword"></div>
-            <button class="btn btn-success" id="registerBtn">S'inscrire</button>
+            <div class="input-group"><label><i class="fas fa-envelope"></i> Email</label><input type="email" id="regEmail" placeholder="email@exemple.com"></div>
+            <div class="input-group"><label><i class="fas fa-lock"></i> Mot de passe (6+ caractères)</label><input type="password" id="regPassword" placeholder="••••••"></div>
+            <button class="btn btn-success" id="registerBtn"><i class="fas fa-check-circle"></i> S'inscrire</button>
             <div class="switch-link" id="showLogin">Déjà inscrit ? <span>Connectez-vous</span></div>
             <div id="registerMessage" class="message"></div>
         </div>
@@ -327,47 +648,43 @@
     <!-- Admin Dashboard -->
     <div id="adminDashboard" class="hidden">
         <div class="dashboard-header">
-            <div class="logo"><h2><span>⚽ Admin</span> Pronostics WKW</h2></div>
-            <div class="user-info"><i class="fas fa-crown"></i><span>wkwtunisia@gmail.com</span><button class="btn btn-danger" id="adminLogoutBtn" style="width:auto;padding:8px 20px;">Déconnexion</button></div>
+            <div class="dashboard-logo">
+                <div class="logo-icon">
+                    <i class="fas fa-crown"></i>
+                </div>
+                <h2><span>Admin</span> Pronostics WKW</h2>
+            </div>
+            <div class="user-info"><i class="fas fa-user-shield"></i><span>wkwtunisia@gmail.com</span><button class="btn btn-danger" id="adminLogoutBtn" style="width:auto;padding:8px 20px;"><i class="fas fa-sign-out-alt"></i> Déconnexion</button></div>
         </div>
         
-        <!-- Liste des utilisateurs et classement -->
         <div class="admin-panel">
-            <h3><i class="fas fa-users"></i> Classement des utilisateurs</h3>
+            <h3><i class="fas fa-trophy"></i> Classement des utilisateurs</h3>
             <div id="usersRankingContainer"></div>
         </div>
         
         <div class="admin-panel">
             <h3><i class="fas fa-plus-circle"></i> Ajouter un match</h3>
-            <div class="form-group"><label>Équipe domicile</label><input type="text" id="homeTeam" placeholder="France"></div>
-            <div class="form-group"><label>Équipe extérieure</label><input type="text" id="awayTeam" placeholder="Argentine"></div>
-            <div class="form-group"><label>Date et heure</label><input type="datetime-local" id="matchDate"></div>
+            <div class="form-group"><label><i class="fas fa-flag-checkered"></i> Équipe domicile</label><input type="text" id="homeTeam" placeholder="France"></div>
+            <div class="form-group"><label><i class="fas fa-flag"></i> Équipe extérieure</label><input type="text" id="awayTeam" placeholder="Argentine"></div>
+            <div class="form-group"><label><i class="fas fa-calendar"></i> Date et heure</label><input type="datetime-local" id="matchDate"></div>
             
             <div class="points-config">
-                <label><i class="fas fa-star"></i> Configuration des points pour ce match :</label>
+                <label><i class="fas fa-star"></i> Configuration des points :</label>
                 <div class="points-input-group">
-                    <div>
-                        <label style="font-size:12px">Vainqueur correct</label>
-                        <input type="number" id="winnerPoints" value="5" min="0" step="1" style="width:80px">
-                    </div>
-                    <div>
-                        <label style="font-size:12px">Score exact</label>
-                        <input type="number" id="exactScorePoints" value="10" min="0" step="1" style="width:80px">
-                    </div>
+                    <div><label style="font-size:12px">🏆 Vainqueur correct</label><input type="number" id="winnerPoints" value="5" min="0"></div>
+                    <div><label style="font-size:12px">🎯 Score exact</label><input type="number" id="exactScorePoints" value="10" min="0"></div>
                 </div>
-                <div style="margin-top:10px">
-                    <label style="font-size:12px">
-                        <input type="checkbox" id="isSpecialMatch"> 🏆 Match spécial (double points)
-                    </label>
+                <div style="margin-top:12px">
+                    <label><input type="checkbox" id="isSpecialMatch"> 🌟 Match spécial (points doublés)</label>
                 </div>
             </div>
             
-            <button class="btn btn-primary" id="addMatchBtn">Ajouter le match</button>
+            <button class="btn btn-primary" id="addMatchBtn"><i class="fas fa-save"></i> Ajouter le match</button>
             <div id="adminMessage" class="message"></div>
         </div>
 
         <div class="admin-panel">
-            <h3><i class="fas fa-chart-line"></i> Matchs & Pronostics des utilisateurs</h3>
+            <h3><i class="fas fa-chart-line"></i> Matchs & Pronostics</h3>
             <div id="adminMatchesContainer"></div>
         </div>
     </div>
@@ -375,10 +692,15 @@
     <!-- User Dashboard -->
     <div id="userDashboard" class="hidden">
         <div class="dashboard-header">
-            <div class="logo"><h2><span>⚽ Pronostics</span> WKW</h2></div>
-            <div class="user-info"><i class="fas fa-user-circle"></i><div><span id="userName"></span><br><small id="userDept"></small></div><button class="btn btn-danger" id="userLogoutBtn" style="width:auto;padding:8px 20px;">Déconnexion</button></div>
+            <div class="dashboard-logo">
+                <div class="logo-icon">
+                    <i class="fas fa-futbol"></i>
+                </div>
+                <h2><span>Pronostics</span> WKW</h2>
+            </div>
+            <div class="user-info"><i class="fas fa-user-circle"></i><div><strong id="userName"></strong><br><small id="userDept"></small></div><button class="btn btn-danger" id="userLogoutBtn" style="width:auto;padding:8px 20px;"><i class="fas fa-sign-out-alt"></i> Déconnexion</button></div>
         </div>
-        <h2 style="color:white"><i class="fas fa-trophy"></i> Matchs à pronostiquer</h2>
+        <h2 style="color:white; margin-bottom:10px;"><i class="fas fa-trophy"></i> Matchs à pronostiquer</h2>
         <p style="color:#94a3b8; margin-bottom:20px;">Chaque match a ses propres points ! Les matchs spéciaux rapportent le double de points.</p>
         <div id="userMatchesList" class="matches-grid"></div>
     </div>
@@ -412,7 +734,6 @@
 
         let tempFinalResults = {};
 
-        // Auth state
         auth.onAuthStateChanged(async (user) => {
             if (user) {
                 if (user.email === 'wkwtunisia@gmail.com') {
@@ -440,13 +761,12 @@
             }
         });
 
-        // Login/Register
         document.getElementById('loginBtn').onclick = async () => {
             const email = document.getElementById('loginEmail').value;
             const pwd = document.getElementById('loginPassword').value;
             try {
                 await auth.signInWithEmailAndPassword(email, pwd);
-                showMessage(document.getElementById('loginMessage'), 'Connexion réussie', false);
+                showMessage(document.getElementById('loginMessage'), 'Connexion réussie !', false);
             } catch (err) { showMessage(document.getElementById('loginMessage'), err.message); }
         };
         
@@ -462,7 +782,7 @@
             try {
                 const cred = await auth.createUserWithEmailAndPassword(email, pwd);
                 await db.ref(`users/${cred.user.uid}`).set({ fullName: full, department: dept, email: email, totalPoints: 0 });
-                showMessage(document.getElementById('registerMessage'), 'Inscription OK, connectez-vous', false);
+                showMessage(document.getElementById('registerMessage'), 'Inscription réussie ! Connectez-vous', false);
                 setTimeout(() => { registerForm.style.display = 'none'; loginForm.style.display = 'block'; }, 1500);
             } catch (err) { showMessage(document.getElementById('registerMessage'), err.message); }
         };
@@ -472,7 +792,6 @@
         document.getElementById('adminLogoutBtn').onclick = () => auth.signOut();
         document.getElementById('userLogoutBtn').onclick = () => auth.signOut();
 
-        // Ajouter match avec points personnalisés
         document.getElementById('addMatchBtn').onclick = async () => {
             const home = document.getElementById('homeTeam').value.trim();
             const away = document.getElementById('awayTeam').value.trim();
@@ -481,227 +800,111 @@
             const exactScorePoints = parseInt(document.getElementById('exactScorePoints').value) || 10;
             const isSpecial = document.getElementById('isSpecialMatch').checked;
             
-            if (!home || !away || !date) { 
-                showMessage(document.getElementById('adminMessage'), 'Complétez tous les champs'); 
-                return; 
-            }
+            if (!home || !away || !date) { showMessage(document.getElementById('adminMessage'), 'Complétez tous les champs'); return; }
             
             await db.ref('matches').push({ 
-                homeTeam: home, 
-                awayTeam: away, 
-                datetime: date, 
-                finalHome: null, 
-                finalAway: null, 
-                closed: false,
-                winnerPoints: winnerPoints,
-                exactScorePoints: exactScorePoints,
-                isSpecial: isSpecial
+                homeTeam: home, awayTeam: away, datetime: date, finalHome: null, finalAway: null, closed: false,
+                winnerPoints: winnerPoints, exactScorePoints: exactScorePoints, isSpecial: isSpecial
             });
             
-            document.getElementById('homeTeam').value = ''; 
-            document.getElementById('awayTeam').value = ''; 
-            document.getElementById('matchDate').value = '';
-            document.getElementById('winnerPoints').value = '5';
-            document.getElementById('exactScorePoints').value = '10';
-            document.getElementById('isSpecialMatch').checked = false;
-            
-            showMessage(document.getElementById('adminMessage'), 'Match ajouté avec ses points personnalisés', false);
+            document.getElementById('homeTeam').value = ''; document.getElementById('awayTeam').value = ''; document.getElementById('matchDate').value = '';
+            document.getElementById('winnerPoints').value = '5'; document.getElementById('exactScorePoints').value = '10'; document.getElementById('isSpecialMatch').checked = false;
+            showMessage(document.getElementById('adminMessage'), 'Match ajouté avec succès !', false);
         };
 
-        // Charger classement des utilisateurs
         async function loadUsersRanking() {
             const usersSnap = await db.ref('users').once('value');
             const users = usersSnap.val() || {};
             const ranking = [];
-            
             for (const [userId, user] of Object.entries(users)) {
                 if (user.email !== 'wkwtunisia@gmail.com') {
-                    ranking.push({
-                        name: user.fullName || user.email,
-                        department: user.department || 'N/A',
-                        points: user.totalPoints || 0
-                    });
+                    ranking.push({ name: user.fullName || user.email, department: user.department || 'N/A', points: user.totalPoints || 0 });
                 }
             }
-            
             ranking.sort((a, b) => b.points - a.points);
-            
-            let html = `<table class="ranking-table">
-                <thead>
-                    <tr><th>#</th><th>Nom complet</th><th>Département</th><th>Points totaux</th></tr>
-                </thead>
-                <tbody>`;
-            
+            let html = `<table class="ranking-table"><thead><tr><th>#</th><th>Nom complet</th><th>Département</th><th>Points</th></tr></thead><tbody>`;
             ranking.forEach((user, index) => {
-                const rankClass = index === 0 ? 'gold' : '';
-                html += `<tr class="${rankClass}">
-                    <td><strong>${index + 1}</strong></td>
-                    <td>${escapeHtml(user.name)}</td>
-                    <td>${escapeHtml(user.department)}</td>
-                    <td><span class="point-badge">${user.points} pts</span></td>
-                </tr>`;
+                html += `<tr class="${index === 0 ? 'gold' : ''}"><td><strong>${index + 1}</strong></td><td><i class="fas fa-user"></i> ${escapeHtml(user.name)}</td><td>${escapeHtml(user.department)}</td><td><span class="point-badge">${user.points} pts</span></td></tr>`;
             });
-            
-            if (ranking.length === 0) {
-                html += '<tr><td colspan="4">Aucun utilisateur inscrit</td></tr>';
-            }
-            
+            if (ranking.length === 0) html += '<tr><td colspan="4">Aucun utilisateur</td></tr>';
             html += `</tbody></table>`;
             document.getElementById('usersRankingContainer').innerHTML = html;
         }
 
-        // ADMIN : Afficher tous les matchs + pronostics
         async function loadAdminMatchesWithPredictions() {
             const matchesSnap = await db.ref('matches').once('value');
             const matches = matchesSnap.val();
             if (!matches) { document.getElementById('adminMatchesContainer').innerHTML = '<p>Aucun match</p>'; return; }
-            
             let html = '';
             for (const [matchId, match] of Object.entries(matches)) {
                 const betsSnap = await db.ref('pronostics').once('value');
                 const allBets = betsSnap.val() || {};
                 const matchBets = [];
-                
                 for (const [userId, bets] of Object.entries(allBets)) {
                     if (bets[matchId]) {
                         const userSnap = await db.ref(`users/${userId}`).once('value');
-                        const userName = userSnap.val()?.fullName || userId.slice(0,6);
-                        matchBets.push({ userId, userName, bet: bets[matchId] });
+                        matchBets.push({ userName: userSnap.val()?.fullName || userId.slice(0,6), bet: bets[matchId] });
                     }
                 }
-                
-                const finalHome = match.finalHome ?? '';
-                const finalAway = match.finalAway ?? '';
-                const isClosed = match.closed === true;
-                const isSpecial = match.isSpecial || false;
-                const winnerPoints = match.winnerPoints || 5;
-                const exactScorePoints = match.exactScorePoints || 10;
-                
-                const displayHome = tempFinalResults[`${matchId}_home`] !== undefined ? tempFinalResults[`${matchId}_home`] : finalHome;
-                const displayAway = tempFinalResults[`${matchId}_away`] !== undefined ? tempFinalResults[`${matchId}_away`] : finalAway;
-                
-                html += `<div class="match-admin-card">
-                    <div class="match-title">
-                        🏆 ${match.homeTeam} vs ${match.awayTeam} 
-                        <small>(${match.datetime || 'Date inconnue'})</small>
-                        ${isSpecial ? '<span class="special-badge"><i class="fas fa-gem"></i> Match spécial x2</span>' : ''}
-                        <span class="status-badge ${isClosed ? 'status-closed' : 'status-open'}" style="margin-left:10px;">
-                            ${isClosed ? '✅ Terminé' : '🟢 En cours'}
-                        </span>
-                    </div>
-                    <div class="points-config">
-                        <i class="fas fa-trophy"></i> Points de ce match: 
-                        <strong>Vainqueur = ${winnerPoints} pts</strong> | 
-                        <strong>Score exact = ${exactScorePoints} pts</strong>
-                        ${isSpecial ? ' <strong style="color:#d97706;">(x2 pour match spécial !)</strong>' : ''}
-                    </div>
-                    <div class="final-result">
-                        <strong>🏁 Résultat final :</strong>
-                        <input type="number" id="finalHome_${matchId}" placeholder="Home" value="${displayHome}" style="width:70px;" 
-                               onchange="tempFinalResults['${matchId}_home'] = this.value">
-                        <span>-</span>
-                        <input type="number" id="finalAway_${matchId}" placeholder="Away" value="${displayAway}" style="width:70px;"
-                               onchange="tempFinalResults['${matchId}_away'] = this.value">
-                        <button class="validate-btn btn-primary" onclick="validateMatchResult('${matchId}')">✅ Valider & Noter</button>
-                        <button class="validate-btn btn-warning" onclick="resetMatchPoints('${matchId}')">🔄 Reset notes</button>
-                    </div>
-                    <div class="predictions-table">
-                        <table>
-                            <thead><tr><th>Utilisateur</th><th>Pronostic</th><th>Points</th><th>Statut</th></tr></thead>
-                            <tbody id="tbody_${matchId}">`;
-                
-                if (matchBets.length === 0) {
-                    html += `<tr><td colspan="4">Aucun pronostic pour ce match</td></tr>`;
-                } else {
-                    for (const betItem of matchBets) {
-                        const bet = betItem.bet;
-                        const points = bet.pointsEarned ?? 0;
-                        const isValidated = bet.validated === true;
-                        html += `<tr>
-                            <td>${escapeHtml(betItem.userName)}</td>
-                            <td><strong>${bet.homeScore} - ${bet.awayScore}</strong></td>
-                            <td><span class="point-badge">${points} pts</span></td>
-                            <td>${isValidated ? '✅ Validé' : '⏳ En attente'}</td>
-                        </tr>`;
-                    }
+                const displayHome = tempFinalResults[`${matchId}_home`] !== undefined ? tempFinalResults[`${matchId}_home`] : (match.finalHome ?? '');
+                const displayAway = tempFinalResults[`${matchId}_away`] !== undefined ? tempFinalResults[`${matchId}_away`] : (match.finalAway ?? '');
+                html += `<div class="match-admin-card"><div class="match-title">🏆 ${match.homeTeam} vs ${match.awayTeam} <small>(${match.datetime})</small>${match.isSpecial ? '<span class="special-badge">🌟 Spécial x2</span>' : ''}<span class="status-badge ${match.closed ? 'status-closed' : 'status-open'}">${match.closed ? '✅ Terminé' : '🟢 En cours'}</span></div>
+                <div class="points-config">🏆 Vainqueur = ${match.winnerPoints || 5} pts | 🎯 Score exact = ${match.exactScorePoints || 10} pts ${match.isSpecial ? '<strong style="color:#d97706;"> (x2)</strong>' : ''}</div>
+                <div class="final-result"><strong>🏁 Résultat final :</strong><input type="number" id="finalHome_${matchId}" value="${displayHome}" placeholder="0" onchange="tempFinalResults['${matchId}_home']=this.value"><span>-</span><input type="number" id="finalAway_${matchId}" value="${displayAway}" placeholder="0" onchange="tempFinalResults['${matchId}_away']=this.value"><button class="validate-btn btn-primary" onclick="validateMatchResult('${matchId}')">✅ Valider</button><button class="validate-btn btn-warning" onclick="resetMatchPoints('${matchId}')">🔄 Reset</button></div>
+                <div class="predictions-table"><table><thead><tr><th>Utilisateur</th><th>Pronostic</th><th>Points</th></tr></thead><tbody>`;
+                for (const betItem of matchBets) {
+                    html += `<tr><td><i class="fas fa-user"></i> ${escapeHtml(betItem.userName)}</td><td><strong>${betItem.bet.homeScore} - ${betItem.bet.awayScore}</strong></td><td><span class="point-badge">${betItem.bet.pointsEarned || 0} pts</span></td></tr>`;
                 }
+                if (matchBets.length === 0) html += '<tr><td colspan="3">Aucun pronostic</td></tr>';
                 html += `</tbody></table></div></div>`;
             }
             document.getElementById('adminMatchesContainer').innerHTML = html;
         }
 
-        // Valider le résultat avec points personnalisés
         window.validateMatchResult = async (matchId) => {
-            const finalHomeInput = document.getElementById(`finalHome_${matchId}`);
-            const finalAwayInput = document.getElementById(`finalAway_${matchId}`);
-            
-            const finalHome = parseInt(finalHomeInput.value);
-            const finalAway = parseInt(finalAwayInput.value);
-            
-            if (isNaN(finalHome) || isNaN(finalAway)) { 
-                alert('Entrez un score valide pour les deux équipes'); 
-                return;
-            }
-            
-            // Récupérer les infos du match
+            const finalHome = parseInt(document.getElementById(`finalHome_${matchId}`).value);
+            const finalAway = parseInt(document.getElementById(`finalAway_${matchId}`).value);
+            if (isNaN(finalHome) || isNaN(finalAway)) { alert('Entrez un score valide'); return; }
             const matchSnap = await db.ref(`matches/${matchId}`).once('value');
             const match = matchSnap.val();
             const winnerPoints = match.winnerPoints || 5;
             const exactScorePoints = match.exactScorePoints || 10;
-            const isSpecial = match.isSpecial || false;
-            const multiplier = isSpecial ? 2 : 1;
-            
+            const multiplier = match.isSpecial ? 2 : 1;
             const betsSnap = await db.ref('pronostics').once('value');
             const allBets = betsSnap.val() || {};
             const updates = {};
             const affectedUsers = new Set();
-            
             for (const [userId, bets] of Object.entries(allBets)) {
                 if (bets[matchId]) {
                     const bet = bets[matchId];
                     let points = 0;
                     const exactScore = (bet.homeScore === finalHome && bet.awayScore === finalAway);
-                    const correctWinner = ((finalHome > finalAway && bet.homeScore > bet.awayScore) ||
-                                          (finalAway > finalHome && bet.awayScore > bet.homeScore) ||
-                                          (finalHome === finalAway && bet.homeScore === bet.awayScore));
-                    
+                    const correctWinner = ((finalHome > finalAway && bet.homeScore > bet.awayScore) || (finalAway > finalHome && bet.awayScore > bet.homeScore) || (finalHome === finalAway && bet.homeScore === bet.awayScore));
                     if (exactScore) points = exactScorePoints * multiplier;
                     else if (correctWinner) points = winnerPoints * multiplier;
-                    else points = 0;
-                    
                     updates[`pronostics/${userId}/${matchId}/pointsEarned`] = points;
                     updates[`pronostics/${userId}/${matchId}/validated`] = true;
-                    updates[`pronostics/${userId}/${matchId}/validatedAt`] = Date.now();
                     affectedUsers.add(userId);
                 }
             }
-            
             updates[`matches/${matchId}/finalHome`] = finalHome;
             updates[`matches/${matchId}/finalAway`] = finalAway;
             updates[`matches/${matchId}/closed`] = true;
-            
             await db.ref().update(updates);
-            
             delete tempFinalResults[`${matchId}_home`];
             delete tempFinalResults[`${matchId}_away`];
-            
-            for (let userId of affectedUsers) {
-                await recalcUserTotalPoints(userId);
-            }
-            
-            alert(`Résultat ${finalHome}-${finalAway} enregistré !\nVainqueur = ${winnerPoints * multiplier}pts\nScore exact = ${exactScorePoints * multiplier}pts`);
+            for (let userId of affectedUsers) await recalcUserTotalPoints(userId);
+            alert(`Résultat ${finalHome}-${finalAway} enregistré !`);
             loadUsersRanking();
             loadAdminMatchesWithPredictions();
         };
 
         window.resetMatchPoints = async (matchId) => {
-            if(!confirm('Remettre à zéro les pronostics de ce match ?')) return;
-            
+            if(!confirm('Remettre à zéro ce match ?')) return;
             const betsSnap = await db.ref('pronostics').once('value');
             const allBets = betsSnap.val() || {};
             const updates = {};
             const affectedUsers = new Set();
-            
             for (const [userId, bets] of Object.entries(allBets)) {
                 if (bets[matchId]) {
                     updates[`pronostics/${userId}/${matchId}/pointsEarned`] = 0;
@@ -709,19 +912,14 @@
                     affectedUsers.add(userId);
                 }
             }
-            
             updates[`matches/${matchId}/finalHome`] = null;
             updates[`matches/${matchId}/finalAway`] = null;
             updates[`matches/${matchId}/closed`] = false;
-            
             await db.ref().update(updates);
-            
             for (let uid of affectedUsers) await recalcUserTotalPoints(uid);
-            
             delete tempFinalResults[`${matchId}_home`];
             delete tempFinalResults[`${matchId}_away`];
-            
-            alert('Points reset pour ce match');
+            alert('Reset effectué');
             loadUsersRanking();
             loadAdminMatchesWithPredictions();
         };
@@ -730,134 +928,52 @@
             const userBetsSnap = await db.ref(`pronostics/${userId}`).once('value');
             const bets = userBetsSnap.val() || {};
             let total = 0;
-            for (let matchId in bets) {
-                if (bets[matchId].pointsEarned) total += bets[matchId].pointsEarned;
-            }
+            for (let matchId in bets) if (bets[matchId].pointsEarned) total += bets[matchId].pointsEarned;
             await db.ref(`users/${userId}/totalPoints`).set(total);
         }
 
-        // USER : Charger les matchs
         async function loadUserMatches(userId) {
             const matchesSnap = await db.ref('matches').once('value');
             const matches = matchesSnap.val();
-            if (!matches) { 
-                document.getElementById('userMatchesList').innerHTML = '<div style="color:white;text-align:center">Aucun match pour le moment</div>'; 
-                return; 
-            }
-            
+            if (!matches) { document.getElementById('userMatchesList').innerHTML = '<div style="color:white;text-align:center">Aucun match</div>'; return; }
             const userBetsSnap = await db.ref(`pronostics/${userId}`).once('value');
             const userBets = userBetsSnap.val() || {};
-            
             let html = '';
             for (const [matchId, match] of Object.entries(matches)) {
                 const existing = userBets[matchId];
                 const isClosed = match.closed === true;
                 const hasBet = existing !== undefined;
-                const isSpecial = match.isSpecial || false;
-                const winnerPoints = match.winnerPoints || 5;
-                const exactScorePoints = match.exactScorePoints || 10;
-                const multiplier = isSpecial ? 2 : 1;
-                const finalText = (match.finalHome !== null && match.finalAway !== null) ? 
-                    ` (Résultat final: ${match.finalHome}-${match.finalAway})` : '';
-                
-                html += `<div class="match-card">
-                    <div class="match-teams">
-                        ${match.homeTeam} 🆚 ${match.awayTeam}
-                        ${isSpecial ? '<span class="special-badge"><i class="fas fa-gem"></i> Spécial x2</span>' : ''}
-                    </div>
-                    <div class="match-date"><i class="far fa-calendar"></i> ${match.datetime || 'Date à venir'}${finalText}</div>
-                    <div class="points-config" style="background:#e0e7ff; text-align:center;">
-                        <i class="fas fa-star"></i> Points: Vainqueur=${winnerPoints * multiplier} | Exact=${exactScorePoints * multiplier}
-                    </div>`;
-                
+                const multiplier = match.isSpecial ? 2 : 1;
+                html += `<div class="match-card"><div class="match-teams">${match.homeTeam} 🆚 ${match.awayTeam}${match.isSpecial ? '<span class="special-badge">🌟 Spécial x2</span>' : ''}</div>
+                <div class="match-date"><i class="far fa-calendar"></i> ${match.datetime}${match.finalHome !== null ? ` (Résultat: ${match.finalHome}-${match.finalAway})` : ''}</div>
+                <div class="points-config" style="text-align:center;">🏆 Vainqueur=${(match.winnerPoints||5)*multiplier} | 🎯 Exact=${(match.exactScorePoints||10)*multiplier}</div>`;
                 if (!isClosed && !hasBet) {
-                    html += `<div class="score-inputs">
-                        <div class="score-input">
-                            <label>${match.homeTeam}</label>
-                            <input type="number" id="home_${matchId}" placeholder="0" min="0">
-                        </div>
-                        <div class="score-input">
-                            <label>${match.awayTeam}</label>
-                            <input type="number" id="away_${matchId}" placeholder="0" min="0">
-                        </div>
-                    </div>
-                    <button class="btn btn-primary" onclick="saveBet('${matchId}', '${userId}')">
-                        📝 Enregistrer mon pronostic (1 seule fois)
-                    </button>`;
+                    html += `<div class="score-inputs"><div class="score-input"><label>${match.homeTeam}</label><input type="number" id="home_${matchId}" placeholder="0"></div><div class="score-input"><label>${match.awayTeam}</label><input type="number" id="away_${matchId}" placeholder="0"></div></div>
+                    <button class="btn btn-primary" onclick="saveBet('${matchId}', '${userId}')"><i class="fas fa-save"></i> Enregistrer mon pronostic</button>`;
                 } else if (hasBet) {
-                    const bet = existing;
-                    const points = bet.pointsEarned || 0;
-                    html += `<div class="score-display">
-                        <i class="fas fa-check-circle" style="color:#10b981"></i> 
-                        Votre pronostic enregistré : <strong>${bet.homeScore} - ${bet.awayScore}</strong>
-                    </div>`;
-                    if (isClosed && bet.validated) {
-                        html += `<div class="points-earned">
-                            <i class="fas fa-star"></i> Points gagnés: ${points} pts
-                        </div>`;
-                    } else if (!isClosed) {
-                        html += `<div class="bet-info">
-                            <i class="fas fa-lock"></i> Pronostic verrouillé - Modification impossible
-                        </div>`;
-                    }
-                } else if (isClosed && !hasBet) {
-                    html += `<div class="bet-info">
-                        <i class="fas fa-times-circle"></i> Match terminé - Vous n'avez pas pronostiqué
-                    </div>`;
-                }
-                
+                    html += `<div class="score-display"><i class="fas fa-check-circle"></i> Votre pronostic: <strong>${existing.homeScore} - ${existing.awayScore}</strong></div>`;
+                    if (isClosed && existing.validated) html += `<div class="points-earned"><i class="fas fa-star"></i> Points gagnés: ${existing.pointsEarned || 0} pts</div>`;
+                    else if (!isClosed) html += `<div class="bet-info"><i class="fas fa-lock"></i> Pronostic verrouillé</div>`;
+                } else if (isClosed) html += `<div class="bet-info"><i class="fas fa-times-circle"></i> Match terminé</div>`;
                 html += `</div>`;
             }
             document.getElementById('userMatchesList').innerHTML = html;
         }
 
-        // Sauvegarder un pronostic
         window.saveBet = async (matchId, userId) => {
-            const homeInput = document.getElementById(`home_${matchId}`);
-            const awayInput = document.getElementById(`away_${matchId}`);
-            const homeScore = parseInt(homeInput.value);
-            const awayScore = parseInt(awayInput.value);
-            
-            if (isNaN(homeScore) || isNaN(awayScore)) { 
-                alert('Veuillez entrer des scores valides'); 
-                return; 
-            }
-            
+            const homeScore = parseInt(document.getElementById(`home_${matchId}`).value);
+            const awayScore = parseInt(document.getElementById(`away_${matchId}`).value);
+            if (isNaN(homeScore) || isNaN(awayScore)) { alert('Entrez des scores valides'); return; }
             const existingBet = await db.ref(`pronostics/${userId}/${matchId}`).once('value');
-            if (existingBet.exists()) {
-                alert('Vous avez déjà enregistré un pronostic pour ce match. Modification impossible !');
-                return;
-            }
-            
+            if (existingBet.exists()) { alert('Pronostic déjà enregistré !'); return; }
             const matchSnap = await db.ref(`matches/${matchId}`).once('value');
-            const match = matchSnap.val();
-            if (match && match.closed === true) { 
-                alert('Match terminé, vous ne pouvez plus pronostiquer'); 
-                return; 
-            }
-            
-            await db.ref(`pronostics/${userId}/${matchId}`).set({
-                homeScore: homeScore,
-                awayScore: awayScore,
-                timestamp: Date.now(),
-                pointsEarned: 0,
-                validated: false,
-                locked: true
-            });
-            
-            alert('✓ Pronostic enregistré avec succès ! Vous ne pourrez plus le modifier.');
+            if (matchSnap.val()?.closed) { alert('Match terminé'); return; }
+            await db.ref(`pronostics/${userId}/${matchId}`).set({ homeScore, awayScore, timestamp: Date.now(), pointsEarned: 0, validated: false });
+            alert('✓ Pronostic enregistré avec succès !');
             loadUserMatches(userId);
         };
 
-        function escapeHtml(str) { 
-            if(!str) return ''; 
-            return str.replace(/[&<>]/g, function(m){
-                if(m==='&') return '&amp;'; 
-                if(m==='<') return '&lt;'; 
-                if(m==='>') return '&gt;'; 
-                return m;
-            });
-        }
+        function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
     </script>
 </body>
 </html>
