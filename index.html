@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Pronostics WKW - Admin & Paris</title>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .auth-container {
+            max-width: 500px;
+            margin: 50px auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+
+        .card h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #1e293b;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 14px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-primary { background: #3b82f6; color: white; }
+        .btn-primary:hover { background: #2563eb; }
+        .btn-success { background: #10b981; color: white; }
+        .btn-success:hover { background: #059669; }
+        .btn-warning { background: #f59e0b; color: white; }
+        .btn-danger { background: #ef4444; color: white; }
+        .btn-secondary { background: #64748b; color: white; }
+        .btn-secondary:hover { background: #475569; }
+        .btn-info { background: #8b5cf6; color: white; }
+        .btn-info:hover { background: #7c3aed; }
+
+        .switch-link {
+            text-align: center;
+            margin-top: 20px;
+            color: #64748b;
+            cursor: pointer;
+        }
+        .switch-link span { color: #3b82f6; font-weight: 600; }
+
+        .message {
+            padding: 12px;
+            border-radius: 12px;
+            margin-top: 15px;
+            text-align: center;
+            display: none;
+        }
+        .error { background: #fee2e2; color: #dc2626; }
+        .success { background: #d1fae5; color: #065f46; }
+
+        .dashboard-header {
+            background: white;
+            border-radius: 20px;
+            padding: 20px 30px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .logo h2 { color: #1e293b; }
+        .logo span { color: #3b82f6; }
+        .user-info { display: flex; align-items: center; gap: 20px; }
+
+        .admin-panel {
+            background: white;
+            border-radius: 24px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { font-weight: 600; margin-bottom: 8px; display: block; }
+
+        .match-admin-card {
+            background: #f8fafc;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border: 1px solid #e2e8f0;
+        }
+        .match-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #0f172a;
+        }
+        .points-config {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            padding: 15px;
+            border-radius: 12px;
+            margin: 15px 0;
+        }
+        .points-config input {
+            width: 100px;
+            padding: 8px;
+            text-align: center;
+            border: 2px solid #d97706;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        .predictions-table {
+            width: 100%;
+            overflow-x: auto;
+            margin-top: 15px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        th {
+            background: #f1f5f9;
+            font-weight: 600;
+        }
+        .point-badge {
+            background: #e0e7ff;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .special-badge {
+            background: #fef3c7;
+            color: #92400e;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        .validate-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            margin: 2px;
+        }
+        .final-result {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin: 15px 0;
+            padding: 15px;
+            background: #eef2ff;
+            border-radius: 12px;
+        }
+        .final-result input {
+            width: 70px;
+            padding: 8px;
+            text-align: center;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        .matches-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+        }
+        .match-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+        }
+        .match-teams {
+            font-size: 20px;
+            font-weight: 700;
+            text-align: center;
+            padding: 15px;
+            background: #eef2ff;
+            border-radius: 12px;
+            margin-bottom: 15px;
+        }
+        .score-display {
+            text-align: center;
+            padding: 15px;
+            background: #f1f5f9;
+            border-radius: 12px;
+            margin: 15px 0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .bet-info {
+            background: #d1fae5;
+            padding: 12px;
+            border-radius: 12px;
+            text-align: center;
+            margin-top: 10px;
+        }
+        .points-earned {
+            background: #fef3c7;
+            padding: 8px;
+            border-radius: 12px;
+            margin-top: 10px;
+            text-align: center;
+            font-weight: bold;
+            color: #b45309;
+        }
+        .hidden { display: none; }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .status-open { background: #dbeafe; color: #1e40af; }
+        .status-closed { background: #fef3c7; color: #92400e; }
+        .user-stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 16px;
+            margin-bottom: 10px;
+        }
+        .ranking-table {
+            width: 100%;
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        .ranking-table th, .ranking-table td {
+            padding: 12px;
+            text-align: center;
+        }
+        .gold { background: #fef3c7; color: #92400e; font-weight: bold; }
+        .points-input-group {
+            display: inline-flex;
+            gap: 15px;
+            align-items: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Auth Container -->
+    <div id="authContainer" class="auth-container">
+        <div id="loginForm" class="card">
+            <h2><i class="fas fa-futbol"></i> Connexion</h2>
+            <div class="input-group"><label>Email</label><input type="email" id="loginEmail"></div>
+            <div class="input-group"><label>Mot de passe</label><input type="password" id="loginPassword"></div>
+            <button class="btn btn-primary" id="loginBtn">Se connecter</button>
+            <div class="switch-link" id="showRegister">Pas de compte ? <span>Inscrivez-vous</span></div>
+            <div id="loginMessage" class="message"></div>
+        </div>
+        <div id="registerForm" class="card" style="display: none;">
+            <h2><i class="fas fa-user-plus"></i> Inscription</h2>
+            <div class="input-group"><label>Nom complet</label><input type="text" id="regFullName"></div>
+            <div class="input-group"><label>Département</label>
+                <select id="regDepartment">
+                    <option>Informatique</option><option>Logistique</option><option>RH</option><option>Finance</option>
+                    <option>Achat</option><option>UAP 1</option><option>UAP 2</option><option>Qualité</option>
+                    <option>Méthode</option><option>Amélioration Continue</option><option>Industriel</option><option>Contenu</option>
+                </select>
+            </div>
+            <div class="input-group"><label>Email</label><input type="email" id="regEmail"></div>
+            <div class="input-group"><label>Mot de passe (6+ caractères)</label><input type="password" id="regPassword"></div>
+            <button class="btn btn-success" id="registerBtn">S'inscrire</button>
+            <div class="switch-link" id="showLogin">Déjà inscrit ? <span>Connectez-vous</span></div>
+            <div id="registerMessage" class="message"></div>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="adminDashboard" class="hidden">
+        <div class="dashboard-header">
+            <div class="logo"><h2><span>⚽ Admin</span> Pronostics WKW</h2></div>
+            <div class="user-info"><i class="fas fa-crown"></i><span>wkwtunisia@gmail.com</span><button class="btn btn-danger" id="adminLogoutBtn" style="width:auto;padding:8px 20px;">Déconnexion</button></div>
+        </div>
+        
+        <!-- Liste des utilisateurs et classement -->
+        <div class="admin-panel">
+            <h3><i class="fas fa-users"></i> Classement des utilisateurs</h3>
+            <div id="usersRankingContainer"></div>
+        </div>
+        
+        <div class="admin-panel">
+            <h3><i class="fas fa-plus-circle"></i> Ajouter un match</h3>
+            <div class="form-group"><label>Équipe domicile</label><input type="text" id="homeTeam" placeholder="France"></div>
+            <div class="form-group"><label>Équipe extérieure</label><input type="text" id="awayTeam" placeholder="Argentine"></div>
+            <div class="form-group"><label>Date et heure</label><input type="datetime-local" id="matchDate"></div>
+            
+            <div class="points-config">
+                <label><i class="fas fa-star"></i> Configuration des points pour ce match :</label>
+                <div class="points-input-group">
+                    <div>
+                        <label style="font-size:12px">Vainqueur correct</label>
+                        <input type="number" id="winnerPoints" value="5" min="0" step="1" style="width:80px">
+                    </div>
+                    <div>
+                        <label style="font-size:12px">Score exact</label>
+                        <input type="number" id="exactScorePoints" value="10" min="0" step="1" style="width:80px">
+                    </div>
+                </div>
+                <div style="margin-top:10px">
+                    <label style="font-size:12px">
+                        <input type="checkbox" id="isSpecialMatch"> 🏆 Match spécial (double points)
+                    </label>
+                </div>
+            </div>
+            
+            <button class="btn btn-primary" id="addMatchBtn">Ajouter le match</button>
+            <div id="adminMessage" class="message"></div>
+        </div>
+
+        <div class="admin-panel">
+            <h3><i class="fas fa-chart-line"></i> Matchs & Pronostics des utilisateurs</h3>
+            <div id="adminMatchesContainer"></div>
+        </div>
+    </div>
+
+    <!-- User Dashboard -->
+    <div id="userDashboard" class="hidden">
+        <div class="dashboard-header">
+            <div class="logo"><h2><span>⚽ Pronostics</span> WKW</h2></div>
+            <div class="user-info"><i class="fas fa-user-circle"></i><div><span id="userName"></span><br><small id="userDept"></small></div><button class="btn btn-danger" id="userLogoutBtn" style="width:auto;padding:8px 20px;">Déconnexion</button></div>
+        </div>
+        <h2 style="color:white"><i class="fas fa-trophy"></i> Matchs à pronostiquer</h2>
+        <p style="color:#94a3b8; margin-bottom:20px;">Chaque match a ses propres points ! Les matchs spéciaux rapportent le double de points.</p>
+        <div id="userMatchesList" class="matches-grid"></div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyB0__K3JrnYVb41oEWDsZOYLGkSswVtlE0",
+            authDomain: "pronostics-coupe-du-monde-wkw.firebaseapp.com",
+            databaseURL: "https://pronostics-coupe-du-monde-wkw-default-rtdb.firebaseio.com",
+            projectId: "pronostics-coupe-du-monde-wkw",
+            storageBucket: "pronostics-coupe-du-monde-wkw.firebasestorage.app",
+            messagingSenderId: "956279429105",
+            appId: "1:956279429105:web:161d4f55d9181e3e261650"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.database();
+
+        const authContainer = document.getElementById('authContainer');
+        const adminDashboard = document.getElementById('adminDashboard');
+        const userDashboard = document.getElementById('userDashboard');
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+
+        function showMessage(element, text, isError = true) {
+            element.textContent = text;
+            element.className = `message ${isError ? 'error' : 'success'}`;
+            element.style.display = 'block';
+            setTimeout(() => element.style.display = 'none', 3000);
+        }
+
+        let tempFinalResults = {};
+
+        // Auth state
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                if (user.email === 'wkwtunisia@gmail.com') {
+                    authContainer.classList.add('hidden');
+                    adminDashboard.classList.remove('hidden');
+                    userDashboard.classList.add('hidden');
+                    loadUsersRanking();
+                    loadAdminMatchesWithPredictions();
+                } else {
+                    const snapshot = await db.ref(`users/${user.uid}`).once('value');
+                    const userData = snapshot.val() || {};
+                    document.getElementById('userName').innerText = userData.fullName || user.email;
+                    document.getElementById('userDept').innerText = userData.department || '';
+                    authContainer.classList.add('hidden');
+                    adminDashboard.classList.add('hidden');
+                    userDashboard.classList.remove('hidden');
+                    loadUserMatches(user.uid);
+                }
+            } else {
+                authContainer.classList.remove('hidden');
+                adminDashboard.classList.add('hidden');
+                userDashboard.classList.add('hidden');
+                loginForm.style.display = 'block';
+                registerForm.style.display = 'none';
+            }
+        });
+
+        // Login/Register
+        document.getElementById('loginBtn').onclick = async () => {
+            const email = document.getElementById('loginEmail').value;
+            const pwd = document.getElementById('loginPassword').value;
+            try {
+                await auth.signInWithEmailAndPassword(email, pwd);
+                showMessage(document.getElementById('loginMessage'), 'Connexion réussie', false);
+            } catch (err) { showMessage(document.getElementById('loginMessage'), err.message); }
+        };
+        
+        document.getElementById('registerBtn').onclick = async () => {
+            const full = document.getElementById('regFullName').value;
+            const dept = document.getElementById('regDepartment').value;
+            const email = document.getElementById('regEmail').value;
+            const pwd = document.getElementById('regPassword').value;
+            if (!full || !email || pwd.length < 6) {
+                showMessage(document.getElementById('registerMessage'), 'Champs invalides');
+                return;
+            }
+            try {
+                const cred = await auth.createUserWithEmailAndPassword(email, pwd);
+                await db.ref(`users/${cred.user.uid}`).set({ fullName: full, department: dept, email: email, totalPoints: 0 });
+                showMessage(document.getElementById('registerMessage'), 'Inscription OK, connectez-vous', false);
+                setTimeout(() => { registerForm.style.display = 'none'; loginForm.style.display = 'block'; }, 1500);
+            } catch (err) { showMessage(document.getElementById('registerMessage'), err.message); }
+        };
+        
+        document.getElementById('showRegister').onclick = () => { loginForm.style.display = 'none'; registerForm.style.display = 'block'; };
+        document.getElementById('showLogin').onclick = () => { registerForm.style.display = 'none'; loginForm.style.display = 'block'; };
+        document.getElementById('adminLogoutBtn').onclick = () => auth.signOut();
+        document.getElementById('userLogoutBtn').onclick = () => auth.signOut();
+
+        // Ajouter match avec points personnalisés
+        document.getElementById('addMatchBtn').onclick = async () => {
+            const home = document.getElementById('homeTeam').value.trim();
+            const away = document.getElementById('awayTeam').value.trim();
+            const date = document.getElementById('matchDate').value;
+            const winnerPoints = parseInt(document.getElementById('winnerPoints').value) || 5;
+            const exactScorePoints = parseInt(document.getElementById('exactScorePoints').value) || 10;
+            const isSpecial = document.getElementById('isSpecialMatch').checked;
+            
+            if (!home || !away || !date) { 
+                showMessage(document.getElementById('adminMessage'), 'Complétez tous les champs'); 
+                return; 
+            }
+            
+            await db.ref('matches').push({ 
+                homeTeam: home, 
+                awayTeam: away, 
+                datetime: date, 
+                finalHome: null, 
+                finalAway: null, 
+                closed: false,
+                winnerPoints: winnerPoints,
+                exactScorePoints: exactScorePoints,
+                isSpecial: isSpecial
+            });
+            
+            document.getElementById('homeTeam').value = ''; 
+            document.getElementById('awayTeam').value = ''; 
+            document.getElementById('matchDate').value = '';
+            document.getElementById('winnerPoints').value = '5';
+            document.getElementById('exactScorePoints').value = '10';
+            document.getElementById('isSpecialMatch').checked = false;
+            
+            showMessage(document.getElementById('adminMessage'), 'Match ajouté avec ses points personnalisés', false);
+        };
+
+        // Charger classement des utilisateurs
+        async function loadUsersRanking() {
+            const usersSnap = await db.ref('users').once('value');
+            const users = usersSnap.val() || {};
+            const ranking = [];
+            
+            for (const [userId, user] of Object.entries(users)) {
+                if (user.email !== 'wkwtunisia@gmail.com') {
+                    ranking.push({
+                        name: user.fullName || user.email,
+                        department: user.department || 'N/A',
+                        points: user.totalPoints || 0
+                    });
+                }
+            }
+            
+            ranking.sort((a, b) => b.points - a.points);
+            
+            let html = `<table class="ranking-table">
+                <thead>
+                    <tr><th>#</th><th>Nom complet</th><th>Département</th><th>Points totaux</th></tr>
+                </thead>
+                <tbody>`;
+            
+            ranking.forEach((user, index) => {
+                const rankClass = index === 0 ? 'gold' : '';
+                html += `<tr class="${rankClass}">
+                    <td><strong>${index + 1}</strong></td>
+                    <td>${escapeHtml(user.name)}</td>
+                    <td>${escapeHtml(user.department)}</td>
+                    <td><span class="point-badge">${user.points} pts</span></td>
+                </tr>`;
+            });
+            
+            if (ranking.length === 0) {
+                html += '<tr><td colspan="4">Aucun utilisateur inscrit</td></tr>';
+            }
+            
+            html += `</tbody></table>`;
+            document.getElementById('usersRankingContainer').innerHTML = html;
+        }
+
+        // ADMIN : Afficher tous les matchs + pronostics
+        async function loadAdminMatchesWithPredictions() {
+            const matchesSnap = await db.ref('matches').once('value');
+            const matches = matchesSnap.val();
+            if (!matches) { document.getElementById('adminMatchesContainer').innerHTML = '<p>Aucun match</p>'; return; }
+            
+            let html = '';
+            for (const [matchId, match] of Object.entries(matches)) {
+                const betsSnap = await db.ref('pronostics').once('value');
+                const allBets = betsSnap.val() || {};
+                const matchBets = [];
+                
+                for (const [userId, bets] of Object.entries(allBets)) {
+                    if (bets[matchId]) {
+                        const userSnap = await db.ref(`users/${userId}`).once('value');
+                        const userName = userSnap.val()?.fullName || userId.slice(0,6);
+                        matchBets.push({ userId, userName, bet: bets[matchId] });
+                    }
+                }
+                
+                const finalHome = match.finalHome ?? '';
+                const finalAway = match.finalAway ?? '';
+                const isClosed = match.closed === true;
+                const isSpecial = match.isSpecial || false;
+                const winnerPoints = match.winnerPoints || 5;
+                const exactScorePoints = match.exactScorePoints || 10;
+                
+                const displayHome = tempFinalResults[`${matchId}_home`] !== undefined ? tempFinalResults[`${matchId}_home`] : finalHome;
+                const displayAway = tempFinalResults[`${matchId}_away`] !== undefined ? tempFinalResults[`${matchId}_away`] : finalAway;
+                
+                html += `<div class="match-admin-card">
+                    <div class="match-title">
+                        🏆 ${match.homeTeam} vs ${match.awayTeam} 
+                        <small>(${match.datetime || 'Date inconnue'})</small>
+                        ${isSpecial ? '<span class="special-badge"><i class="fas fa-gem"></i> Match spécial x2</span>' : ''}
+                        <span class="status-badge ${isClosed ? 'status-closed' : 'status-open'}" style="margin-left:10px;">
+                            ${isClosed ? '✅ Terminé' : '🟢 En cours'}
+                        </span>
+                    </div>
+                    <div class="points-config">
+                        <i class="fas fa-trophy"></i> Points de ce match: 
+                        <strong>Vainqueur = ${winnerPoints} pts</strong> | 
+                        <strong>Score exact = ${exactScorePoints} pts</strong>
+                        ${isSpecial ? ' <strong style="color:#d97706;">(x2 pour match spécial !)</strong>' : ''}
+                    </div>
+                    <div class="final-result">
+                        <strong>🏁 Résultat final :</strong>
+                        <input type="number" id="finalHome_${matchId}" placeholder="Home" value="${displayHome}" style="width:70px;" 
+                               onchange="tempFinalResults['${matchId}_home'] = this.value">
+                        <span>-</span>
+                        <input type="number" id="finalAway_${matchId}" placeholder="Away" value="${displayAway}" style="width:70px;"
+                               onchange="tempFinalResults['${matchId}_away'] = this.value">
+                        <button class="validate-btn btn-primary" onclick="validateMatchResult('${matchId}')">✅ Valider & Noter</button>
+                        <button class="validate-btn btn-warning" onclick="resetMatchPoints('${matchId}')">🔄 Reset notes</button>
+                    </div>
+                    <div class="predictions-table">
+                        <table>
+                            <thead><tr><th>Utilisateur</th><th>Pronostic</th><th>Points</th><th>Statut</th></tr></thead>
+                            <tbody id="tbody_${matchId}">`;
+                
+                if (matchBets.length === 0) {
+                    html += `<tr><td colspan="4">Aucun pronostic pour ce match</td></tr>`;
+                } else {
+                    for (const betItem of matchBets) {
+                        const bet = betItem.bet;
+                        const points = bet.pointsEarned ?? 0;
+                        const isValidated = bet.validated === true;
+                        html += `<tr>
+                            <td>${escapeHtml(betItem.userName)}</td>
+                            <td><strong>${bet.homeScore} - ${bet.awayScore}</strong></td>
+                            <td><span class="point-badge">${points} pts</span></td>
+                            <td>${isValidated ? '✅ Validé' : '⏳ En attente'}</td>
+                        </tr>`;
+                    }
+                }
+                html += `</tbody></table></div></div>`;
+            }
+            document.getElementById('adminMatchesContainer').innerHTML = html;
+        }
+
+        // Valider le résultat avec points personnalisés
+        window.validateMatchResult = async (matchId) => {
+            const finalHomeInput = document.getElementById(`finalHome_${matchId}`);
+            const finalAwayInput = document.getElementById(`finalAway_${matchId}`);
+            
+            const finalHome = parseInt(finalHomeInput.value);
+            const finalAway = parseInt(finalAwayInput.value);
+            
+            if (isNaN(finalHome) || isNaN(finalAway)) { 
+                alert('Entrez un score valide pour les deux équipes'); 
+                return;
+            }
+            
+            // Récupérer les infos du match
+            const matchSnap = await db.ref(`matches/${matchId}`).once('value');
+            const match = matchSnap.val();
+            const winnerPoints = match.winnerPoints || 5;
+            const exactScorePoints = match.exactScorePoints || 10;
+            const isSpecial = match.isSpecial || false;
+            const multiplier = isSpecial ? 2 : 1;
+            
+            const betsSnap = await db.ref('pronostics').once('value');
+            const allBets = betsSnap.val() || {};
+            const updates = {};
+            const affectedUsers = new Set();
+            
+            for (const [userId, bets] of Object.entries(allBets)) {
+                if (bets[matchId]) {
+                    const bet = bets[matchId];
+                    let points = 0;
+                    const exactScore = (bet.homeScore === finalHome && bet.awayScore === finalAway);
+                    const correctWinner = ((finalHome > finalAway && bet.homeScore > bet.awayScore) ||
+                                          (finalAway > finalHome && bet.awayScore > bet.homeScore) ||
+                                          (finalHome === finalAway && bet.homeScore === bet.awayScore));
+                    
+                    if (exactScore) points = exactScorePoints * multiplier;
+                    else if (correctWinner) points = winnerPoints * multiplier;
+                    else points = 0;
+                    
+                    updates[`pronostics/${userId}/${matchId}/pointsEarned`] = points;
+                    updates[`pronostics/${userId}/${matchId}/validated`] = true;
+                    updates[`pronostics/${userId}/${matchId}/validatedAt`] = Date.now();
+                    affectedUsers.add(userId);
+                }
+            }
+            
+            updates[`matches/${matchId}/finalHome`] = finalHome;
+            updates[`matches/${matchId}/finalAway`] = finalAway;
+            updates[`matches/${matchId}/closed`] = true;
+            
+            await db.ref().update(updates);
+            
+            delete tempFinalResults[`${matchId}_home`];
+            delete tempFinalResults[`${matchId}_away`];
+            
+            for (let userId of affectedUsers) {
+                await recalcUserTotalPoints(userId);
+            }
+            
+            alert(`Résultat ${finalHome}-${finalAway} enregistré !\nVainqueur = ${winnerPoints * multiplier}pts\nScore exact = ${exactScorePoints * multiplier}pts`);
+            loadUsersRanking();
+            loadAdminMatchesWithPredictions();
+        };
+
+        window.resetMatchPoints = async (matchId) => {
+            if(!confirm('Remettre à zéro les pronostics de ce match ?')) return;
+            
+            const betsSnap = await db.ref('pronostics').once('value');
+            const allBets = betsSnap.val() || {};
+            const updates = {};
+            const affectedUsers = new Set();
+            
+            for (const [userId, bets] of Object.entries(allBets)) {
+                if (bets[matchId]) {
+                    updates[`pronostics/${userId}/${matchId}/pointsEarned`] = 0;
+                    updates[`pronostics/${userId}/${matchId}/validated`] = false;
+                    affectedUsers.add(userId);
+                }
+            }
+            
+            updates[`matches/${matchId}/finalHome`] = null;
+            updates[`matches/${matchId}/finalAway`] = null;
+            updates[`matches/${matchId}/closed`] = false;
+            
+            await db.ref().update(updates);
+            
+            for (let uid of affectedUsers) await recalcUserTotalPoints(uid);
+            
+            delete tempFinalResults[`${matchId}_home`];
+            delete tempFinalResults[`${matchId}_away`];
+            
+            alert('Points reset pour ce match');
+            loadUsersRanking();
+            loadAdminMatchesWithPredictions();
+        };
+
+        async function recalcUserTotalPoints(userId) {
+            const userBetsSnap = await db.ref(`pronostics/${userId}`).once('value');
+            const bets = userBetsSnap.val() || {};
+            let total = 0;
+            for (let matchId in bets) {
+                if (bets[matchId].pointsEarned) total += bets[matchId].pointsEarned;
+            }
+            await db.ref(`users/${userId}/totalPoints`).set(total);
+        }
+
+        // USER : Charger les matchs
+        async function loadUserMatches(userId) {
+            const matchesSnap = await db.ref('matches').once('value');
+            const matches = matchesSnap.val();
+            if (!matches) { 
+                document.getElementById('userMatchesList').innerHTML = '<div style="color:white;text-align:center">Aucun match pour le moment</div>'; 
+                return; 
+            }
+            
+            const userBetsSnap = await db.ref(`pronostics/${userId}`).once('value');
+            const userBets = userBetsSnap.val() || {};
+            
+            let html = '';
+            for (const [matchId, match] of Object.entries(matches)) {
+                const existing = userBets[matchId];
+                const isClosed = match.closed === true;
+                const hasBet = existing !== undefined;
+                const isSpecial = match.isSpecial || false;
+                const winnerPoints = match.winnerPoints || 5;
+                const exactScorePoints = match.exactScorePoints || 10;
+                const multiplier = isSpecial ? 2 : 1;
+                const finalText = (match.finalHome !== null && match.finalAway !== null) ? 
+                    ` (Résultat final: ${match.finalHome}-${match.finalAway})` : '';
+                
+                html += `<div class="match-card">
+                    <div class="match-teams">
+                        ${match.homeTeam} 🆚 ${match.awayTeam}
+                        ${isSpecial ? '<span class="special-badge"><i class="fas fa-gem"></i> Spécial x2</span>' : ''}
+                    </div>
+                    <div class="match-date"><i class="far fa-calendar"></i> ${match.datetime || 'Date à venir'}${finalText}</div>
+                    <div class="points-config" style="background:#e0e7ff; text-align:center;">
+                        <i class="fas fa-star"></i> Points: Vainqueur=${winnerPoints * multiplier} | Exact=${exactScorePoints * multiplier}
+                    </div>`;
+                
+                if (!isClosed && !hasBet) {
+                    html += `<div class="score-inputs">
+                        <div class="score-input">
+                            <label>${match.homeTeam}</label>
+                            <input type="number" id="home_${matchId}" placeholder="0" min="0">
+                        </div>
+                        <div class="score-input">
+                            <label>${match.awayTeam}</label>
+                            <input type="number" id="away_${matchId}" placeholder="0" min="0">
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="saveBet('${matchId}', '${userId}')">
+                        📝 Enregistrer mon pronostic (1 seule fois)
+                    </button>`;
+                } else if (hasBet) {
+                    const bet = existing;
+                    const points = bet.pointsEarned || 0;
+                    html += `<div class="score-display">
+                        <i class="fas fa-check-circle" style="color:#10b981"></i> 
+                        Votre pronostic enregistré : <strong>${bet.homeScore} - ${bet.awayScore}</strong>
+                    </div>`;
+                    if (isClosed && bet.validated) {
+                        html += `<div class="points-earned">
+                            <i class="fas fa-star"></i> Points gagnés: ${points} pts
+                        </div>`;
+                    } else if (!isClosed) {
+                        html += `<div class="bet-info">
+                            <i class="fas fa-lock"></i> Pronostic verrouillé - Modification impossible
+                        </div>`;
+                    }
+                } else if (isClosed && !hasBet) {
+                    html += `<div class="bet-info">
+                        <i class="fas fa-times-circle"></i> Match terminé - Vous n'avez pas pronostiqué
+                    </div>`;
+                }
+                
+                html += `</div>`;
+            }
+            document.getElementById('userMatchesList').innerHTML = html;
+        }
+
+        // Sauvegarder un pronostic
+        window.saveBet = async (matchId, userId) => {
+            const homeInput = document.getElementById(`home_${matchId}`);
+            const awayInput = document.getElementById(`away_${matchId}`);
+            const homeScore = parseInt(homeInput.value);
+            const awayScore = parseInt(awayInput.value);
+            
+            if (isNaN(homeScore) || isNaN(awayScore)) { 
+                alert('Veuillez entrer des scores valides'); 
+                return; 
+            }
+            
+            const existingBet = await db.ref(`pronostics/${userId}/${matchId}`).once('value');
+            if (existingBet.exists()) {
+                alert('Vous avez déjà enregistré un pronostic pour ce match. Modification impossible !');
+                return;
+            }
+            
+            const matchSnap = await db.ref(`matches/${matchId}`).once('value');
+            const match = matchSnap.val();
+            if (match && match.closed === true) { 
+                alert('Match terminé, vous ne pouvez plus pronostiquer'); 
+                return; 
+            }
+            
+            await db.ref(`pronostics/${userId}/${matchId}`).set({
+                homeScore: homeScore,
+                awayScore: awayScore,
+                timestamp: Date.now(),
+                pointsEarned: 0,
+                validated: false,
+                locked: true
+            });
+            
+            alert('✓ Pronostic enregistré avec succès ! Vous ne pourrez plus le modifier.');
+            loadUserMatches(userId);
+        };
+
+        function escapeHtml(str) { 
+            if(!str) return ''; 
+            return str.replace(/[&<>]/g, function(m){
+                if(m==='&') return '&amp;'; 
+                if(m==='<') return '&lt;'; 
+                if(m==='>') return '&gt;'; 
+                return m;
+            });
+        }
+    </script>
+</body>
+</html>
