@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>FIFA World Cup 2026 - WKW Pronostics Officiel</title>
+    <title>FIFA World Cup 2026 - WKW Pronostics</title>
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
     <!-- SheetJS for Excel Export -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
-    <!-- Font Awesome 6 -->
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -28,7 +28,6 @@
             overflow-x: hidden;
         }
 
-        /* World Cup 2026 Premium Theme */
         body::before {
             content: '';
             position: fixed;
@@ -53,17 +52,7 @@
             z-index: 100;
         }
 
-        /* Animations Premium */
-        @keyframes slideInLeft {
-            from { opacity: 0; transform: translateX(-30px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-
-        @keyframes slideInRight {
-            from { opacity: 0; transform: translateX(30px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-
+        /* Animations */
         @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(30px); }
             to { opacity: 1; transform: translateY(0); }
@@ -71,259 +60,10 @@
 
         @keyframes glowPulse {
             0%, 100% { box-shadow: 0 0 5px rgba(255,215,0,0.3); }
-            50% { box-shadow: 0 0 25px rgba(255,215,0,0.6); }
+            50% { box-shadow: 0 0 20px rgba(255,215,0,0.5); }
         }
 
-        @keyframes shimmer {
-            0% { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
-        }
-
-        @keyframes borderGlow {
-            0%, 100% { border-color: rgba(255,215,0,0.3); box-shadow: 0 0 0 0 rgba(255,215,0,0); }
-            50% { border-color: rgba(255,215,0,0.8); box-shadow: 0 0 0 4px rgba(255,215,0,0.1); }
-        }
-
-        /* ========== LOGIN & REGISTER CARDS PREMIUM ========== */
-        .auth-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .card {
-            background: rgba(255, 255, 255, 0.98);
-            backdrop-filter: blur(20px);
-            border-radius: 48px;
-            padding: 50px 45px;
-            max-width: 520px;
-            width: 100%;
-            border: 1px solid rgba(255, 215, 0, 0.3);
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3), 0 0 0 0 rgba(255,215,0,0.2);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            animation: fadeInUp 0.6s ease-out;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 40px 70px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255,215,0,0.4);
-            border-color: rgba(255, 215, 0, 0.5);
-        }
-
-        /* Logo dans la carte */
-        .card-logo {
-            text-align: center;
-            margin-bottom: 35px;
-        }
-
-        .card-logo-icon {
-            width: 85px;
-            height: 85px;
-            background: linear-gradient(135deg, #FFD700, #FFA500);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 18px;
-            animation: glowPulse 2s infinite;
-            transition: transform 0.3s;
-        }
-
-        .card-logo-icon:hover {
-            transform: scale(1.05);
-        }
-
-        .card-logo-icon i {
-            font-size: 42px;
-            color: #0a0f1e;
-        }
-
-        .card-logo h2 {
-            font-size: 28px;
-            font-weight: 800;
-            background: linear-gradient(135deg, #FFD700, #FFA500, #FF6B35);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            letter-spacing: -0.5px;
-        }
-
-        .card-logo p {
-            color: #64748b;
-            font-size: 13px;
-            margin-top: 8px;
-            font-weight: 500;
-        }
-
-        /* ========== INPUT GROUPS PREMIUM ========== */
-        .input-group {
-            margin-bottom: 25px;
-            position: relative;
-        }
-
-        .input-group label {
-            display: block;
-            margin-bottom: 10px;
-            font-weight: 600;
-            color: #1e293b;
-            font-size: 14px;
-            letter-spacing: 0.3px;
-            transition: color 0.3s;
-        }
-
-        .input-group label i {
-            margin-right: 8px;
-            color: #FFD700;
-            width: 20px;
-        }
-
-        .input-group input,
-        .input-group select {
-            width: 100%;
-            padding: 16px 18px;
-            border: 2px solid #e2e8f0;
-            border-radius: 20px;
-            font-size: 15px;
-            font-weight: 500;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            background: white;
-            color: #1e293b;
-        }
-
-        .input-group input:focus,
-        .input-group select:focus {
-            outline: none;
-            border-color: #FFD700;
-            box-shadow: 0 0 0 4px rgba(255, 215, 0, 0.15);
-            transform: translateY(-2px);
-        }
-
-        .input-group input:hover,
-        .input-group select:hover {
-            border-color: #cbd5e1;
-            background: #fefefe;
-        }
-
-        /* Input avec icône à l'intérieur */
-        .input-with-icon {
-            position: relative;
-        }
-
-        .input-with-icon i {
-            position: absolute;
-            left: 18px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #FFD700;
-            font-size: 18px;
-            pointer-events: none;
-        }
-
-        .input-with-icon input {
-            padding-left: 50px;
-        }
-
-        /* Boutons premium */
-        .btn {
-            padding: 16px 24px;
-            border: none;
-            border-radius: 24px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-            transition: left 0.5s;
-        }
-
-        .btn:hover::before {
-            left: 100%;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #FFD700, #FFA500);
-            color: #0a0f1e;
-            font-weight: 800;
-            letter-spacing: 0.5px;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 30px -8px rgba(255, 215, 0, 0.5);
-        }
-
-        .btn-primary:active {
-            transform: translateY(0);
-        }
-
-        .btn-success {
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-        }
-
-        .btn-danger {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
-            color: white;
-        }
-
-        /* Switch link */
-        .switch-link {
-            text-align: center;
-            margin-top: 25px;
-            color: #64748b;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 14px;
-        }
-
-        .switch-link:hover {
-            color: #FFD700;
-        }
-
-        .switch-link span {
-            color: #FFD700;
-            font-weight: 700;
-            margin-left: 5px;
-        }
-
-        /* Message feedback */
-        .message {
-            padding: 14px;
-            border-radius: 20px;
-            margin-top: 20px;
-            text-align: center;
-            display: none;
-            animation: fadeInUp 0.3s ease-out;
-            font-weight: 500;
-        }
-
-        .error {
-            background: linear-gradient(135deg, #fee2e2, #fecaca);
-            color: #dc2626;
-            border-left: 4px solid #dc2626;
-        }
-
-        .success {
-            background: linear-gradient(135deg, #d1fae5, #a7f3d0);
-            color: #065f46;
-            border-left: 4px solid #10b981;
-        }
-
-        /* ========== LAYOUT DASHBOARD ========== */
+        /* Layout */
         .dashboard-layout {
             display: flex;
             min-height: 100vh;
@@ -331,39 +71,18 @@
             z-index: 1;
         }
 
-        /* Sidebar Premium */
+        /* Sidebar */
         .sidebar {
             width: 280px;
             background: rgba(10, 15, 30, 0.98);
             backdrop-filter: blur(12px);
-            border-right: 1px solid rgba(255, 215, 0, 0.2);
+            border-right: 1px solid rgba(255, 215, 0, 0.3);
             padding: 30px 20px;
             position: fixed;
             height: 100vh;
             overflow-y: auto;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.3s;
             z-index: 50;
-        }
-
-        .sidebar::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        .sidebar::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-        }
-
-        .sidebar::-webkit-scrollbar-thumb {
-            background: #FFD700;
-            border-radius: 10px;
-        }
-
-        .sidebar-header {
-            text-align: center;
-            margin-bottom: 40px;
-            padding-bottom: 25px;
-            border-bottom: 1px solid rgba(255, 215, 0, 0.2);
         }
 
         .sidebar-logo {
@@ -376,40 +95,27 @@
             justify-content: center;
             margin: 0 auto 15px;
             animation: glowPulse 2s infinite;
-            transition: transform 0.3s;
         }
 
-        .sidebar-logo:hover {
-            transform: scale(1.05);
+        .sidebar-logo i { font-size: 40px; color: #0a0f1e; }
+
+        .sidebar-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 215, 0, 0.2);
         }
 
-        .sidebar-logo i {
-            font-size: 40px;
-            color: #0a0f1e;
-        }
+        .sidebar-header h3 { color: #FFD700; font-size: 18px; font-weight: 700; }
+        .sidebar-header p { color: #94a3b8; font-size: 11px; margin-top: 5px; }
 
-        .sidebar-header h3 {
-            color: #FFD700;
-            font-size: 18px;
-            font-weight: 700;
-            letter-spacing: 1px;
-        }
-
-        .sidebar-header p {
-            color: #94a3b8;
-            font-size: 11px;
-            margin-top: 5px;
-        }
-
-        /* Navigation Menu */
+        /* Navigation */
         .nav-menu {
             list-style: none;
             margin-bottom: 30px;
         }
 
-        .nav-item {
-            margin-bottom: 8px;
-        }
+        .nav-item { margin-bottom: 8px; }
 
         .nav-link {
             display: flex;
@@ -419,37 +125,27 @@
             background: rgba(255, 255, 255, 0.03);
             border-radius: 14px;
             color: #cbd5e1;
-            text-decoration: none;
-            transition: all 0.3s ease;
             cursor: pointer;
+            transition: all 0.3s;
             border: 1px solid transparent;
         }
 
-        .nav-link i {
-            width: 24px;
-            font-size: 18px;
-        }
-
-        .nav-link span {
-            font-weight: 500;
-            font-size: 14px;
-        }
-
         .nav-link:hover {
-            background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 165, 0, 0.08));
+            background: rgba(255, 215, 0, 0.15);
             color: #FFD700;
             transform: translateX(5px);
-            border-color: rgba(255, 215, 0, 0.3);
         }
 
         .nav-link.active {
-            background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 165, 0, 0.1));
+            background: linear-gradient(135deg, rgba(255,215,0,0.2), rgba(255,165,0,0.1));
             color: #FFD700;
             border-left: 3px solid #FFD700;
-            border-color: #FFD700;
         }
 
-        /* Sidebar User Info */
+        .nav-link i { width: 24px; }
+        .nav-link span { font-weight: 500; }
+
+        /* Sidebar User */
         .sidebar-user {
             margin-top: 30px;
             padding-top: 20px;
@@ -468,53 +164,16 @@
             margin: 0 auto 12px;
         }
 
-        .user-avatar i {
-            font-size: 24px;
-            color: #0a0f1e;
-        }
-
-        .user-name {
-            color: white;
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        .user-email {
-            color: #94a3b8;
-            font-size: 11px;
-            margin-bottom: 15px;
-            word-break: break-all;
-        }
-
-        /* Mobile Menu Toggle */
-        .mobile-menu-toggle {
-            display: none;
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            z-index: 60;
-            background: linear-gradient(135deg, #FFD700, #FFA500);
-            border: none;
-            width: 48px;
-            height: 48px;
-            border-radius: 16px;
-            font-size: 24px;
-            color: #0a0f1e;
-            cursor: pointer;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-            transition: all 0.3s;
-        }
-
-        .mobile-menu-toggle:hover {
-            transform: scale(1.05);
-        }
+        .user-avatar i { font-size: 24px; color: #0a0f1e; }
+        .user-name { color: white; font-weight: 600; font-size: 14px; }
+        .user-email { color: #94a3b8; font-size: 11px; margin-bottom: 15px; }
 
         /* Main Content */
         .main-content {
             flex: 1;
             margin-left: 280px;
             padding: 25px 30px;
-            transition: margin-left 0.4s ease;
+            transition: margin-left 0.3s;
         }
 
         /* Dashboard Header */
@@ -524,14 +183,8 @@
             border-radius: 24px;
             padding: 20px 28px;
             margin-bottom: 28px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
             border: 1px solid rgba(255, 215, 0, 0.3);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-            animation: fadeInUp 0.5s ease;
+            animation: fadeInUp 0.5s;
         }
 
         .page-title h2 {
@@ -542,25 +195,15 @@
             -webkit-text-fill-color: transparent;
         }
 
-        .page-title p {
-            color: #64748b;
-            font-size: 13px;
-            margin-top: 5px;
-        }
+        .page-title p { color: #64748b; font-size: 13px; margin-top: 5px; }
 
         /* Content Panels */
-        .content-panel {
-            display: none;
-            animation: fadeInUp 0.5s ease;
-        }
+        .content-panel { display: none; animation: fadeInUp 0.5s; }
+        .content-panel.active { display: block; }
 
-        .content-panel.active {
-            display: block;
-        }
-
+        /* Cards */
         .admin-panel {
             background: rgba(255, 255, 255, 0.97);
-            backdrop-filter: blur(10px);
             border-radius: 28px;
             padding: 28px;
             margin-bottom: 28px;
@@ -571,7 +214,6 @@
         .admin-panel:hover {
             transform: translateY(-2px);
             border-color: rgba(255, 215, 0, 0.5);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
         }
 
         .admin-panel h3 {
@@ -580,44 +222,37 @@
             color: #1e293b;
             border-left: 4px solid #FFD700;
             padding-left: 15px;
+        }
+
+        /* Section Title */
+        .section-title {
+            font-size: 18px;
             font-weight: 700;
+            margin: 20px 0 15px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #FFD700;
+            display: inline-block;
         }
 
-        /* Form Styles Premium */
-        .form-group-modern {
-            margin-bottom: 22px;
-        }
-
-        .form-group-modern label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #1e293b;
-            font-size: 13px;
-        }
-
-        .form-group-modern label i {
-            margin-right: 8px;
-            color: #FFD700;
-        }
-
-        .form-group-modern input {
+        /* Form Styles */
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #1e293b; }
+        .form-group label i { margin-right: 8px; color: #FFD700; }
+        .form-group input, .form-group select {
             width: 100%;
             padding: 14px 18px;
             border: 2px solid #e2e8f0;
             border-radius: 16px;
             font-size: 14px;
             transition: all 0.3s;
-            background: white;
         }
-
-        .form-group-modern input:focus {
+        .form-group input:focus, .form-group select:focus {
             outline: none;
             border-color: #FFD700;
             box-shadow: 0 0 0 4px rgba(255, 215, 0, 0.15);
-            transform: translateY(-2px);
         }
 
+        /* Points Config */
         .points-config {
             background: linear-gradient(135deg, #fef9e7, #fef3c7);
             border-radius: 20px;
@@ -626,6 +261,36 @@
             border: 1px solid #fde68a;
         }
 
+        .points-row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        .point-card {
+            flex: 1;
+            background: white;
+            border-radius: 16px;
+            padding: 15px;
+            text-align: center;
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s;
+        }
+
+        .point-card:hover { border-color: #FFD700; transform: translateY(-2px); }
+        .point-card input {
+            width: 100px;
+            padding: 10px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: 700;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            margin-top: 10px;
+        }
+
+        /* Buttons */
         .btn {
             padding: 14px 24px;
             border: none;
@@ -642,11 +307,8 @@
             width: 100%;
         }
 
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px -5px rgba(255, 215, 0, 0.5);
-        }
-
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(255,215,0,0.5); }
+        .btn-danger { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; }
         .btn-export {
             background: linear-gradient(135deg, #10b981, #059669);
             color: white;
@@ -654,10 +316,9 @@
             align-items: center;
             gap: 8px;
             width: auto;
-            padding: 10px 20px;
         }
 
-        /* Ranking Table Premium */
+        /* Ranking Table */
         .ranking-header {
             display: flex;
             justify-content: space-between;
@@ -672,7 +333,6 @@
             background: white;
             border-radius: 20px;
             overflow: hidden;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
         }
 
         .ranking-table th {
@@ -680,24 +340,16 @@
             color: #0a0f1e;
             padding: 14px;
             font-weight: 700;
-            font-size: 14px;
         }
 
         .ranking-table td {
             padding: 12px;
             text-align: center;
             border-bottom: 1px solid #f1f5f9;
-            font-size: 13px;
         }
 
-        .ranking-table tr:hover {
-            background: #fef9e7;
-        }
-
-        .gold {
-            background: linear-gradient(135deg, #fef3c7, #fde68a);
-            font-weight: bold;
-        }
+        .ranking-table tr:hover { background: #fef9e7; }
+        .gold { background: linear-gradient(135deg, #fef3c7, #fde68a); font-weight: bold; }
 
         /* Match Cards */
         .match-admin-card {
@@ -709,10 +361,7 @@
             transition: all 0.3s;
         }
 
-        .match-admin-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
-        }
+        .match-admin-card:hover { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(0,0,0,0.1); }
 
         .match-title {
             font-size: 18px;
@@ -723,7 +372,6 @@
 
         .special-badge {
             background: linear-gradient(135deg, #FFD700, #FFA500);
-            color: #0a0f1e;
             padding: 3px 10px;
             border-radius: 20px;
             font-size: 10px;
@@ -743,35 +391,23 @@
         }
 
         .final-result input {
-            width: 70px;
-            padding: 10px;
+            width: 80px;
+            padding: 12px;
             text-align: center;
-            font-size: 18px;
+            font-size: 20px;
             font-weight: 700;
             border: 2px solid #cbd5e1;
             border-radius: 12px;
-            transition: all 0.3s;
-        }
-
-        .final-result input:focus {
-            border-color: #FFD700;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.2);
         }
 
         .validate-btn {
-            padding: 8px 14px;
+            padding: 8px 16px;
             border: none;
             border-radius: 12px;
             cursor: pointer;
             font-weight: 600;
-            font-size: 12px;
             margin: 4px;
-            transition: all 0.3s;
         }
-
-        .validate-btn-primary { background: #FFD700; color: #0a0f1e; }
-        .validate-btn-warning { background: #f59e0b; color: white; }
 
         .point-badge {
             background: linear-gradient(135deg, #FFD70020, #FFA50020);
@@ -784,12 +420,12 @@
         /* User Matches Grid */
         .matches-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
             gap: 22px;
         }
 
         .match-card {
-            background: rgba(255, 255, 255, 0.97);
+            background: white;
             border-radius: 20px;
             padding: 22px;
             transition: all 0.3s;
@@ -797,10 +433,7 @@
             animation: glowPulse 3s infinite;
         }
 
-        .match-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 35px rgba(0, 0, 0, 0.15);
-        }
+        .match-card:hover { transform: translateY(-5px); box-shadow: 0 20px 35px rgba(0,0,0,0.15); }
 
         .match-teams {
             font-size: 18px;
@@ -826,76 +459,135 @@
         .score-input input {
             width: 100%;
             max-width: 90px;
-            padding: 10px;
+            padding: 12px;
             text-align: center;
             font-size: 18px;
             font-weight: 700;
             border: 2px solid #e2e8f0;
             border-radius: 14px;
-            transition: all 0.3s;
         }
 
-        .score-input input:focus {
-            border-color: #FFD700;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.2);
-        }
-
-        .score-display {
-            text-align: center;
-            padding: 14px;
+        .bet-info {
             background: #d1fae5;
-            border-radius: 16px;
-            margin: 15px 0;
-            font-weight: 600;
+            padding: 12px;
+            border-radius: 12px;
+            text-align: center;
+            margin-top: 10px;
         }
 
         .points-earned {
             background: #fef3c7;
-            padding: 10px;
+            padding: 8px;
             border-radius: 12px;
+            margin-top: 10px;
             text-align: center;
             font-weight: bold;
         }
 
-        .bet-info {
-            background: #e0e7ff;
-            padding: 10px;
-            border-radius: 12px;
-            text-align: center;
+        .completed-badge {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-block;
+            margin-left: 10px;
         }
 
-        .hidden {
+        /* Badges */
+        .badge-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #0a0f1e;
+        }
+
+        .badge-locked {
+            background: #64748b;
+            color: white;
+            opacity: 0.6;
+        }
+
+        /* History Items */
+        .history-item {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #FFD700;
+        }
+
+        /* Message */
+        .message {
+            padding: 12px;
+            border-radius: 16px;
+            margin-top: 15px;
+            text-align: center;
             display: none;
         }
+        .error { background: #fee2e2; color: #dc2626; }
+        .success { background: #d1fae5; color: #065f46; }
 
-        /* Responsive Design */
-        @media (max-width: 1024px) {
-            .sidebar { width: 260px; }
-            .main-content { margin-left: 260px; padding: 20px; }
+        /* Auth Cards */
+        .auth-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
         }
+
+        .card {
+            background: white;
+            border-radius: 48px;
+            padding: 45px;
+            max-width: 500px;
+            width: 100%;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+        }
+
+        /* Mobile Toggle */
+        .mobile-menu-toggle {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 60;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            border: none;
+            width: 48px;
+            height: 48px;
+            border-radius: 16px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .hidden { display: none; }
 
         @media (max-width: 768px) {
             .mobile-menu-toggle { display: block; }
             .sidebar { transform: translateX(-100%); width: 280px; z-index: 100; }
             .sidebar.open { transform: translateX(0); }
             .main-content { margin-left: 0; padding: 70px 15px 20px; }
-            .dashboard-header { flex-direction: column; text-align: center; }
             .matches-grid { grid-template-columns: 1fr; }
             .ranking-header { flex-direction: column; align-items: stretch; }
             .btn-export { width: 100%; justify-content: center; }
             .final-result { flex-direction: column; }
-            .card { padding: 35px 25px; margin: 15px; }
-            .card-logo-icon { width: 65px; height: 65px; }
-            .card-logo-icon i { font-size: 32px; }
-            .card-logo h2 { font-size: 22px; }
-        }
-
-        @media (max-width: 480px) {
-            .admin-panel { padding: 20px; }
-            .match-title { font-size: 16px; }
-            .input-group input, .input-group select { padding: 14px; }
-            .btn { padding: 14px; }
+            .points-row { flex-direction: column; }
         }
     </style>
 </head>
@@ -906,51 +598,38 @@
 <!-- Auth Container -->
 <div id="authContainer" class="auth-container">
     <div id="loginForm" class="card">
-        <div class="card-logo">
-            <div class="card-logo-icon">
-                <i class="fas fa-futbol"></i>
+        <div style="text-align:center; margin-bottom:30px;">
+            <div style="width:80px; height:80px; background:linear-gradient(135deg,#FFD700,#FFA500); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 15px;">
+                <i class="fas fa-futbol" style="font-size:40px; color:#0a0f1e;"></i>
             </div>
-            <h2>FIFA World Cup 2026</h2>
-            <p>WKW Automotive · Pronostics Officiels</p>
+            <h2 style="font-size:28px; background:linear-gradient(135deg,#FFD700,#FFA500); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">FIFA World Cup 2026</h2>
+            <p style="color:#64748b;">WKW Automotive · Pronostics</p>
         </div>
-        <div class="input-group">
-            <label><i class="fas fa-envelope"></i> Email</label>
-            <div class="input-with-icon">
-                <i class="fas fa-envelope"></i>
-                <input type="email" id="loginEmail" placeholder="exemple@email.com">
-            </div>
-        </div>
-        <div class="input-group">
-            <label><i class="fas fa-lock"></i> Mot de passe</label>
-            <div class="input-with-icon">
-                <i class="fas fa-lock"></i>
-                <input type="password" id="loginPassword" placeholder="••••••">
-            </div>
-        </div>
-        <button class="btn btn-primary" id="loginBtn"><i class="fas fa-sign-in-alt"></i> Se connecter</button>
-        <div class="switch-link" id="showRegister">Pas de compte ? <span>Inscrivez-vous gratuitement</span></div>
+        <div class="form-group"><label><i class="fas fa-envelope"></i> Email</label><input type="email" id="loginEmail" placeholder="exemple@email.com"></div>
+        <div class="form-group"><label><i class="fas fa-lock"></i> Mot de passe</label><input type="password" id="loginPassword" placeholder="••••••"></div>
+        <button class="btn btn-primary" id="loginBtn">Se connecter</button>
+        <div class="switch-link" id="showRegister" style="text-align:center; margin-top:20px; cursor:pointer; color:#64748b;">Pas de compte ? <span style="color:#FFD700;">Inscrivez-vous</span></div>
         <div id="loginMessage" class="message"></div>
     </div>
-    <div id="registerForm" class="card" style="display: none;">
-        <div class="card-logo">
-            <div class="card-logo-icon">
-                <i class="fas fa-trophy"></i>
+    <div id="registerForm" class="card" style="display:none;">
+        <div style="text-align:center; margin-bottom:30px;">
+            <div style="width:80px; height:80px; background:linear-gradient(135deg,#FFD700,#FFA500); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 15px;">
+                <i class="fas fa-trophy" style="font-size:40px; color:#0a0f1e;"></i>
             </div>
-            <h2>Créer un compte</h2>
-            <p>Rejoignez la communauté des pronostiqueurs</p>
+            <h2 style="font-size:28px; background:linear-gradient(135deg,#FFD700,#FFA500); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">Inscription</h2>
         </div>
-        <div class="input-group"><label><i class="fas fa-user"></i> Nom complet</label><input type="text" id="regFullName" placeholder="Votre nom et prénom"></div>
-        <div class="input-group"><label><i class="fas fa-building"></i> Département</label>
+        <div class="form-group"><label><i class="fas fa-user"></i> Nom complet</label><input type="text" id="regFullName" placeholder="Votre nom et prénom"></div>
+        <div class="form-group"><label><i class="fas fa-building"></i> Département</label>
             <select id="regDepartment">
                 <option>Informatique</option><option>Logistique</option><option>RH</option><option>Finance</option>
                 <option>Achat</option><option>UAP 1</option><option>UAP 2</option><option>Qualité</option>
                 <option>Méthode</option><option>Amélioration Continue</option><option>Industriel</option><option>Contenu</option>
             </select>
         </div>
-        <div class="input-group"><label><i class="fas fa-envelope"></i> Email</label><input type="email" id="regEmail" placeholder="email@exemple.com"></div>
-        <div class="input-group"><label><i class="fas fa-lock"></i> Mot de passe (6+ caractères)</label><input type="password" id="regPassword" placeholder="••••••"></div>
-        <button class="btn btn-primary" id="registerBtn" style="background: linear-gradient(135deg, #10b981, #059669);"><i class="fas fa-check-circle"></i> S'inscrire</button>
-        <div class="switch-link" id="showLogin">Déjà inscrit ? <span>Connectez-vous</span></div>
+        <div class="form-group"><label><i class="fas fa-envelope"></i> Email</label><input type="email" id="regEmail" placeholder="email@exemple.com"></div>
+        <div class="form-group"><label><i class="fas fa-lock"></i> Mot de passe (6+ caractères)</label><input type="password" id="regPassword" placeholder="••••••"></div>
+        <button class="btn btn-primary" id="registerBtn" style="background:linear-gradient(135deg,#10b981,#059669);">S'inscrire</button>
+        <div class="switch-link" id="showLogin" style="text-align:center; margin-top:20px; cursor:pointer; color:#64748b;">Déjà inscrit ? <span style="color:#FFD700;">Connectez-vous</span></div>
         <div id="registerMessage" class="message"></div>
     </div>
 </div>
@@ -962,56 +641,82 @@
             <div class="sidebar-header">
                 <div class="sidebar-logo"><i class="fas fa-futbol"></i></div>
                 <h3>FIFA World Cup 2026</h3>
-                <p>WKW Automotive · Officiel</p>
+                <p>Administration</p>
             </div>
             <ul class="nav-menu">
                 <li class="nav-item"><div class="nav-link active" data-panel="addMatch"><i class="fas fa-plus-circle"></i><span>Ajouter un match</span></div></li>
                 <li class="nav-item"><div class="nav-link" data-panel="matches"><i class="fas fa-chart-line"></i><span>Matchs & Pronostics</span></div></li>
-                <li class="nav-item"><div class="nav-link" data-panel="ranking"><i class="fas fa-trophy"></i><span>Classement Mondial</span></div></li>
+                <li class="nav-item"><div class="nav-link" data-panel="ranking"><i class="fas fa-trophy"></i><span>Classement</span></div></li>
+                <li class="nav-item"><div class="nav-link" data-panel="history"><i class="fas fa-history"></i><span>Historique</span></div></li>
+                <li class="nav-item"><div class="nav-link" data-panel="badges"><i class="fas fa-medal"></i><span>Badges</span></div></li>
             </ul>
             <div class="sidebar-user">
                 <div class="user-avatar"><i class="fas fa-user-shield"></i></div>
                 <div class="user-name">Administrateur</div>
                 <div class="user-email">wkwtunisia@gmail.com</div>
-                <button class="btn btn-danger" id="adminLogoutBtn" style="width:100%;"><i class="fas fa-sign-out-alt"></i> Déconnexion</button>
+                <button class="btn btn-danger" id="adminLogoutBtn" style="width:100%;">Déconnexion</button>
             </div>
         </div>
 
         <div class="main-content">
             <div class="dashboard-header">
-                <div class="page-title">
-                    <h2><i class="fas fa-crown"></i> 🇺🇸 FIFA World Cup 2026 · Administration</h2>
-                    <p>Gérez les matchs, les pronostics et le classement mondial</p>
-                </div>
+                <div class="page-title"><h2>🇺🇸 FIFA World Cup 2026 · Administration</h2><p>Gérez les matchs, pronostics et classement</p></div>
             </div>
 
+            <!-- Panel Ajouter un match -->
             <div id="addMatchPanel" class="content-panel active">
                 <div class="admin-panel">
-                    <h3><i class="fas fa-plus-circle"></i> Ajouter un match · Coupe du Monde 2026</h3>
-                    <div class="form-group-modern"><label><i class="fas fa-flag-checkered"></i> Équipe domicile</label><input type="text" id="homeTeam" placeholder="Ex: France, Brésil, USA..."></div>
-                    <div class="form-group-modern"><label><i class="fas fa-flag"></i> Équipe extérieure</label><input type="text" id="awayTeam" placeholder="Ex: Argentine, Allemagne, Mexique..."></div>
-                    <div class="form-group-modern"><label><i class="fas fa-calendar-alt"></i> Date et heure</label><input type="datetime-local" id="matchDate"></div>
+                    <h3><i class="fas fa-plus-circle"></i> Ajouter un match</h3>
+                    <div class="form-group"><label><i class="fas fa-flag-checkered"></i> Équipe domicile</label><input type="text" id="homeTeam" placeholder="Ex: France, Brésil, USA..."></div>
+                    <div class="form-group"><label><i class="fas fa-flag"></i> Équipe extérieure</label><input type="text" id="awayTeam" placeholder="Ex: Argentine, Allemagne..."></div>
+                    <div class="form-group"><label><i class="fas fa-calendar"></i> Date et heure</label><input type="datetime-local" id="matchDate"></div>
+                    
                     <div class="points-config">
                         <h4><i class="fas fa-star"></i> Configuration des points</h4>
-                        <div style="display: flex; gap: 20px; flex-wrap: wrap;"><div><label>🏆 Vainqueur correct</label><input type="number" id="winnerPoints" value="5" style="width: 100px; padding: 8px; text-align: center;"></div><div><label>🎯 Score exact</label><input type="number" id="exactScorePoints" value="10" style="width: 100px; padding: 8px; text-align: center;"></div></div>
-                        <div style="margin-top: 15px;"><label><input type="checkbox" id="isSpecialMatch"> 🌟 Match décisif (points x2 - Finale/Demi-finale)</label></div>
+                        <div class="points-row">
+                            <div class="point-card"><label>🏆 Vainqueur correct</label><input type="number" id="winnerPoints" value="5" min="0"></div>
+                            <div class="point-card"><label>🎯 Score exact</label><input type="number" id="exactScorePoints" value="10" min="0"></div>
+                        </div>
+                        <div><label><input type="checkbox" id="isSpecialMatch"> 🌟 Match décisif (points x2)</label></div>
                     </div>
-                    <button class="btn btn-primary" id="addMatchBtn"><i class="fas fa-futbol"></i> Ajouter le match</button>
+                    
+                    <button class="btn btn-primary" id="addMatchBtn"><i class="fas fa-save"></i> Ajouter le match</button>
                     <div id="adminMessage" class="message"></div>
                 </div>
             </div>
 
+            <!-- Panel Matchs & Pronostics -->
             <div id="matchesPanel" class="content-panel">
                 <div class="admin-panel">
-                    <h3><i class="fas fa-chart-line"></i> Matchs & Pronostics · Mondial 2026</h3>
+                    <h3><i class="fas fa-chart-line"></i> Matchs & Pronostics</h3>
                     <div id="adminMatchesContainer"></div>
                 </div>
             </div>
 
+            <!-- Panel Classement -->
             <div id="rankingPanel" class="content-panel">
                 <div class="admin-panel">
-                    <div class="ranking-header"><h3><i class="fas fa-trophy"></i> Classement Mondial FIFA 2026</h3><button class="btn-export" id="exportExcelBtn"><i class="fas fa-file-excel"></i> Exporter Excel</button></div>
+                    <div class="ranking-header">
+                        <h3><i class="fas fa-trophy"></i> Classement Mondial</h3>
+                        <button class="btn-export" id="exportExcelBtn"><i class="fas fa-file-excel"></i> Exporter Excel</button>
+                    </div>
                     <div id="usersRankingContainer"></div>
+                </div>
+            </div>
+
+            <!-- Panel Historique -->
+            <div id="historyPanel" class="content-panel">
+                <div class="admin-panel">
+                    <h3><i class="fas fa-history"></i> Historique des pronostics</h3>
+                    <div id="historyContainer"></div>
+                </div>
+            </div>
+
+            <!-- Panel Badges -->
+            <div id="badgesPanel" class="content-panel">
+                <div class="admin-panel">
+                    <h3><i class="fas fa-medal"></i> Système de badges</h3>
+                    <div id="badgesContainer"></div>
                 </div>
             </div>
         </div>
@@ -1022,14 +727,58 @@
 <div id="userDashboard" class="hidden">
     <div class="dashboard-layout">
         <div class="sidebar" id="userSidebar">
-            <div class="sidebar-header"><div class="sidebar-logo"><i class="fas fa-futbol"></i></div><h3>FIFA World Cup 2026</h3><p>Pronostics</p></div>
-            <ul class="nav-menu"><li class="nav-item"><div class="nav-link active" data-panel="userMatches"><i class="fas fa-calendar-alt"></i><span>Matchs à pronostiquer</span></div></li><li class="nav-item"><div class="nav-link" data-panel="userRanking"><i class="fas fa-trophy"></i><span>Classement</span></div></li></ul>
-            <div class="sidebar-user"><div class="user-avatar"><i class="fas fa-user-circle"></i></div><div class="user-name" id="userNameSidebar">Utilisateur</div><div class="user-email" id="userEmailSidebar"></div><button class="btn btn-danger" id="userLogoutBtn" style="width:100%;"><i class="fas fa-sign-out-alt"></i> Déconnexion</button></div>
+            <div class="sidebar-header">
+                <div class="sidebar-logo"><i class="fas fa-futbol"></i></div>
+                <h3>Pronostics</h3>
+                <p>FIFA World Cup 2026</p>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item"><div class="nav-link active" data-panel="userMatchesActive"><i class="fas fa-calendar-alt"></i><span>Matchs à pronostiquer</span></div></li>
+                <li class="nav-item"><div class="nav-link" data-panel="userMatchesCompleted"><i class="fas fa-check-circle"></i><span>Matchs terminés</span></div></li>
+                <li class="nav-item"><div class="nav-link" data-panel="userHistory"><i class="fas fa-history"></i><span>Mon historique</span></div></li>
+                <li class="nav-item"><div class="nav-link" data-panel="userBadges"><i class="fas fa-medal"></i><span>Mes badges</span></div></li>
+                <li class="nav-item"><div class="nav-link" data-panel="userRanking"><i class="fas fa-trophy"></i><span>Classement</span></div></li>
+            </ul>
+            <div class="sidebar-user">
+                <div class="user-avatar"><i class="fas fa-user-circle"></i></div>
+                <div class="user-name" id="userNameSidebar">Utilisateur</div>
+                <div class="user-email" id="userEmailSidebar"></div>
+                <button class="btn btn-danger" id="userLogoutBtn" style="width:100%;">Déconnexion</button>
+            </div>
         </div>
+
         <div class="main-content">
-            <div class="dashboard-header"><div class="page-title"><h2>🇺🇸🇨🇦🇲🇽 Pronostics World Cup 2026</h2><p>Pronostiquez et devenez champion !</p></div></div>
-            <div id="userMatchesPanel" class="content-panel active"><div id="userMatchesList" class="matches-grid"></div></div>
-            <div id="userRankingPanel" class="content-panel"><div class="admin-panel"><h3><i class="fas fa-trophy"></i> Classement Mondial</h3><div id="userRankingContainer"></div></div></div>
+            <div class="dashboard-header">
+                <div class="page-title"><h2>🇺🇸 Pronostics World Cup 2026</h2><p>Pronostiquez et gagnez des badges !</p></div>
+            </div>
+
+            <!-- Panel Matchs à pronostiquer (non terminés et non pariés) -->
+            <div id="userMatchesActivePanel" class="content-panel active">
+                <div class="admin-panel">
+                    <h3><i class="fas fa-calendar-alt"></i> Matchs à pronostiquer</h3>
+                    <div id="userMatchesActiveList" class="matches-grid"></div>
+                </div>
+            </div>
+
+            <!-- Panel Matchs terminés -->
+            <div id="userMatchesCompletedPanel" class="content-panel">
+                <div class="admin-panel">
+                    <h3><i class="fas fa-check-circle"></i> Matchs terminés</h3>
+                    <div id="userMatchesCompletedList" class="matches-grid"></div>
+                </div>
+            </div>
+
+            <div id="userHistoryPanel" class="content-panel">
+                <div class="admin-panel"><h3>Mon historique</h3><div id="userHistoryContainer"></div></div>
+            </div>
+
+            <div id="userBadgesPanel" class="content-panel">
+                <div class="admin-panel"><h3>Mes badges</h3><div id="userBadgesContainer"></div></div>
+            </div>
+
+            <div id="userRankingPanel" class="content-panel">
+                <div class="admin-panel"><h3>Classement général</h3><div id="userRankingContainer"></div></div>
+            </div>
         </div>
     </div>
 </div>
@@ -1048,9 +797,7 @@
     const auth = firebase.auth();
     const db = firebase.database();
 
-    const authContainer = document.getElementById('authContainer');
-    const adminDashboard = document.getElementById('adminDashboard');
-    const userDashboard = document.getElementById('userDashboard');
+    let tempFinalResults = {};
 
     function showMessage(element, text, isError = true) {
         element.textContent = text;
@@ -1059,11 +806,12 @@
         setTimeout(() => element.style.display = 'none', 3000);
     }
 
-    // Mobile menu toggle
+    // Mobile menu
     document.getElementById('mobileMenuToggle')?.addEventListener('click', () => {
         document.querySelectorAll('.sidebar').forEach(s => s.classList.toggle('open'));
     });
 
+    // Navigation
     function initSidebarNavigation() {
         document.querySelectorAll('.nav-link').forEach(link => {
             link.addEventListener('click', () => {
@@ -1078,87 +826,197 @@
         });
     }
 
-    let tempFinalResults = {};
+    // Badges
+    const BADGES = [
+        { id: 'first_bet', name: '🏅 Premier pas', description: 'Faire son premier pronostic' },
+        { id: 'streak_3', name: '🔥 En forme', description: '3 pronostics corrects consécutifs' },
+        { id: 'streak_5', name: '⭐ Légende', description: '5 pronostics corrects consécutifs' },
+        { id: 'exact_3', name: '🎯 Précision', description: '3 scores exacts' },
+        { id: 'top_3', name: '🏆 Podium', description: 'Être dans le top 3' }
+    ];
 
+    async function updateUserBadges(userId) {
+        const betsSnap = await db.ref(`pronostics/${userId}`).once('value');
+        const bets = betsSnap.val() || {};
+        let totalBets = 0, correctBets = 0, exactScores = 0, currentStreak = 0, maxStreak = 0;
+        for (let matchId in bets) {
+            const bet = bets[matchId];
+            if (bet.validated) {
+                totalBets++;
+                if (bet.pointsEarned > 0) {
+                    correctBets++;
+                    if (bet.pointsEarned >= 10) exactScores++;
+                    currentStreak++;
+                    maxStreak = Math.max(maxStreak, currentStreak);
+                } else {
+                    currentStreak = 0;
+                }
+            }
+        }
+        const usersSnap = await db.ref('users').once('value');
+        const users = usersSnap.val() || {};
+        let rank = 1;
+        const userPoints = users[userId]?.totalPoints || 0;
+        for (let uid in users) if (users[uid]?.totalPoints > userPoints) rank++;
+        
+        const earnedBadges = [];
+        if (totalBets >= 1) earnedBadges.push('first_bet');
+        if (maxStreak >= 3) earnedBadges.push('streak_3');
+        if (maxStreak >= 5) earnedBadges.push('streak_5');
+        if (exactScores >= 3) earnedBadges.push('exact_3');
+        if (rank <= 3) earnedBadges.push('top_3');
+        
+        await db.ref(`users/${userId}/badges`).set(earnedBadges);
+        return earnedBadges;
+    }
+
+    async function displayBadges(userId, containerId) {
+        const userSnap = await db.ref(`users/${userId}`).once('value');
+        const user = userSnap.val();
+        const badges = user?.badges || [];
+        let html = '<div class="badge-container">';
+        for (const badge of BADGES) {
+            const earned = badges.includes(badge.id);
+            html += `<div class="badge ${!earned ? 'badge-locked' : ''}"><i class="fas ${earned ? 'fa-award' : 'fa-lock'}"></i> ${badge.name}<br><small>${badge.description}</small></div>`;
+        }
+        html += '</div>';
+        document.getElementById(containerId).innerHTML = html;
+    }
+
+    async function loadAllHistory(containerId) {
+        const usersSnap = await db.ref('users').once('value');
+        const users = usersSnap.val() || {};
+        let html = '';
+        for (const [userId, user] of Object.entries(users)) {
+            if (user.email !== 'wkwtunisia@gmail.com') {
+                const betsSnap = await db.ref(`pronostics/${userId}`).once('value');
+                const bets = betsSnap.val() || {};
+                for (const [matchId, bet] of Object.entries(bets)) {
+                    const matchSnap = await db.ref(`matches/${matchId}`).once('value');
+                    const match = matchSnap.val();
+                    if (match) {
+                        html += `<div class="history-item"><strong>${user.fullName || user.email}</strong> - ${match.homeTeam} vs ${match.awayTeam}<br>Pronostic: ${bet.homeScore}-${bet.awayScore} | Points: ${bet.pointsEarned || 0}<br><small>${new Date(bet.timestamp).toLocaleString()}</small></div>`;
+                    }
+                }
+            }
+        }
+        if (html === '') html = '<p>Aucun pronostic</p>';
+        document.getElementById(containerId).innerHTML = html;
+    }
+
+    async function loadUserHistory(userId, containerId) {
+        const betsSnap = await db.ref(`pronostics/${userId}`).once('value');
+        const bets = betsSnap.val() || {};
+        if (Object.keys(bets).length === 0) { document.getElementById(containerId).innerHTML = '<p>Aucun pronostic</p>'; return; }
+        let html = '';
+        for (const [matchId, bet] of Object.entries(bets)) {
+            const matchSnap = await db.ref(`matches/${matchId}`).once('value');
+            const match = matchSnap.val();
+            if (match) {
+                const resultText = match.finalHome !== null ? ` | Résultat: ${match.finalHome}-${match.finalAway}` : '';
+                html += `<div class="history-item"><strong>${match.homeTeam} vs ${match.awayTeam}</strong><br>Pronostic: ${bet.homeScore} - ${bet.awayScore}${resultText}<br>Points: ${bet.pointsEarned || 0}<br><small>${new Date(bet.timestamp).toLocaleString()}</small></div>`;
+            }
+        }
+        document.getElementById(containerId).innerHTML = html;
+    }
+
+    async function loadRanking(containerId) {
+        const usersSnap = await db.ref('users').once('value');
+        const users = usersSnap.val() || {};
+        const ranking = [];
+        for (const [uid, user] of Object.entries(users)) {
+            if (user.email !== 'wkwtunisia@gmail.com') {
+                ranking.push({ name: user.fullName || user.email, points: user.totalPoints || 0 });
+            }
+        }
+        ranking.sort((a, b) => b.points - a.points);
+        let html = '<table class="ranking-table"><thead><tr><th>#</th><th>Utilisateur</th><th>Points</th></tr></thead><tbody>';
+        ranking.forEach((user, i) => {
+            html += `<tr class="${i === 0 ? 'gold' : ''}"><td>${i + 1}</td><td><i class="fas fa-user"></i> ${escapeHtml(user.name)}</td><td><span class="point-badge">${user.points} pts</span></td></tr>`;
+        });
+        if (ranking.length === 0) html += '<tr><td colspan="3">Aucun utilisateur</td></tr>';
+        html += '</tbody></table>';
+        document.getElementById(containerId).innerHTML = html;
+    }
+
+    // Auth State
     auth.onAuthStateChanged(async (user) => {
         if (user) {
+            document.getElementById('authContainer').style.display = 'none';
             if (user.email === 'wkwtunisia@gmail.com') {
-                authContainer.style.display = 'none';
-                adminDashboard.classList.remove('hidden');
-                userDashboard.classList.add('hidden');
+                document.getElementById('adminDashboard').classList.remove('hidden');
+                document.getElementById('userDashboard').classList.add('hidden');
                 initSidebarNavigation();
-                loadUsersRanking();
+                loadRanking('usersRankingContainer');
+                loadAllHistory('historyContainer');
                 loadAdminMatchesWithPredictions();
+                displayBadges('admin', 'badgesContainer');
             } else {
-                const snapshot = await db.ref(`users/${user.uid}`).once('value');
-                const userData = snapshot.val() || {};
-                document.getElementById('userNameSidebar').innerText = userData.fullName || user.email;
-                document.getElementById('userEmailSidebar').innerText = user.email;
-                authContainer.style.display = 'none';
-                adminDashboard.classList.add('hidden');
-                userDashboard.classList.remove('hidden');
+                document.getElementById('userDashboard').classList.remove('hidden');
+                document.getElementById('adminDashboard').classList.add('hidden');
                 initSidebarNavigation();
-                loadUserRankingForUser();
-                loadUserMatches(user.uid);
+                document.getElementById('userNameSidebar').innerText = user.email;
+                document.getElementById('userEmailSidebar').innerText = user.email;
+                loadRanking('userRankingContainer');
+                loadUserHistory(user.uid, 'userHistoryContainer');
+                await updateUserBadges(user.uid);
+                displayBadges(user.uid, 'userBadgesContainer');
+                loadUserMatchesSeparated(user.uid);
             }
         } else {
-            authContainer.style.display = 'flex';
-            adminDashboard.classList.add('hidden');
-            userDashboard.classList.add('hidden');
+            document.getElementById('authContainer').style.display = 'flex';
+            document.getElementById('adminDashboard').classList.add('hidden');
+            document.getElementById('userDashboard').classList.add('hidden');
             document.getElementById('loginForm').style.display = 'block';
             document.getElementById('registerForm').style.display = 'none';
         }
     });
 
-    document.getElementById('loginBtn').onclick = async () => { try { await auth.signInWithEmailAndPassword(document.getElementById('loginEmail').value, document.getElementById('loginPassword').value); } catch (err) { showMessage(document.getElementById('loginMessage'), err.message); } };
+    // Login/Register
+    document.getElementById('loginBtn').onclick = async () => {
+        try {
+            await auth.signInWithEmailAndPassword(document.getElementById('loginEmail').value, document.getElementById('loginPassword').value);
+        } catch (err) { showMessage(document.getElementById('loginMessage'), err.message); }
+    };
     document.getElementById('registerBtn').onclick = async () => {
-        const full = document.getElementById('regFullName').value, dept = document.getElementById('regDepartment').value, email = document.getElementById('regEmail').value, pwd = document.getElementById('regPassword').value;
+        const full = document.getElementById('regFullName').value;
+        const dept = document.getElementById('regDepartment').value;
+        const email = document.getElementById('regEmail').value;
+        const pwd = document.getElementById('regPassword').value;
         if (!full || !email || pwd.length < 6) { showMessage(document.getElementById('registerMessage'), 'Champs invalides'); return; }
-        try { const cred = await auth.createUserWithEmailAndPassword(email, pwd); await db.ref(`users/${cred.user.uid}`).set({ fullName: full, department: dept, email: email, totalPoints: 0 }); alert('Inscription réussie !'); document.getElementById('registerForm').style.display = 'none'; document.getElementById('loginForm').style.display = 'block'; } catch (err) { showMessage(document.getElementById('registerMessage'), err.message); }
+        try {
+            const cred = await auth.createUserWithEmailAndPassword(email, pwd);
+            await db.ref(`users/${cred.user.uid}`).set({ fullName: full, department: dept, email: email, totalPoints: 0, badges: [] });
+            showMessage(document.getElementById('registerMessage'), 'Inscription réussie !', false);
+            setTimeout(() => { document.getElementById('registerForm').style.display = 'none'; document.getElementById('loginForm').style.display = 'block'; }, 1500);
+        } catch (err) { showMessage(document.getElementById('registerMessage'), err.message); }
     };
     document.getElementById('showRegister').onclick = () => { document.getElementById('loginForm').style.display = 'none'; document.getElementById('registerForm').style.display = 'block'; };
     document.getElementById('showLogin').onclick = () => { document.getElementById('registerForm').style.display = 'none'; document.getElementById('loginForm').style.display = 'block'; };
     document.getElementById('adminLogoutBtn').onclick = () => auth.signOut();
     document.getElementById('userLogoutBtn').onclick = () => auth.signOut();
 
+    // Add Match
     document.getElementById('addMatchBtn').onclick = async () => {
-        const home = document.getElementById('homeTeam').value.trim(), away = document.getElementById('awayTeam').value.trim(), date = document.getElementById('matchDate').value;
-        const winnerPoints = parseInt(document.getElementById('winnerPoints').value) || 5, exactScorePoints = parseInt(document.getElementById('exactScorePoints').value) || 10, isSpecial = document.getElementById('isSpecialMatch').checked;
+        const home = document.getElementById('homeTeam').value.trim();
+        const away = document.getElementById('awayTeam').value.trim();
+        const date = document.getElementById('matchDate').value;
+        const winnerPoints = parseInt(document.getElementById('winnerPoints').value) || 5;
+        const exactScorePoints = parseInt(document.getElementById('exactScorePoints').value) || 10;
+        const isSpecial = document.getElementById('isSpecialMatch').checked;
         if (!home || !away || !date) { showMessage(document.getElementById('adminMessage'), 'Complétez tous les champs'); return; }
-        await db.ref('matches').push({ homeTeam: home, awayTeam: away, datetime: date, finalHome: null, finalAway: null, closed: false, winnerPoints, exactScorePoints, isSpecial });
-        document.getElementById('homeTeam').value = ''; document.getElementById('awayTeam').value = ''; document.getElementById('matchDate').value = '';
+        await db.ref('matches').push({
+            homeTeam: home, awayTeam: away, datetime: date, finalHome: null, finalAway: null, closed: false,
+            winnerPoints: winnerPoints, exactScorePoints: exactScorePoints, isSpecial: isSpecial
+        });
+        document.getElementById('homeTeam').value = '';
+        document.getElementById('awayTeam').value = '';
+        document.getElementById('matchDate').value = '';
         showMessage(document.getElementById('adminMessage'), 'Match ajouté !', false);
+        loadAdminMatchesWithPredictions();
     };
 
-    async function loadUsersRanking() {
-        const usersSnap = await db.ref('users').once('value');
-        const users = usersSnap.val() || {};
-        const ranking = [];
-        for (const [userId, user] of Object.entries(users)) if (user.email !== 'wkwtunisia@gmail.com') ranking.push({ name: user.fullName || user.email, department: user.department || 'N/A', points: user.totalPoints || 0 });
-        ranking.sort((a, b) => b.points - a.points);
-        let html = `<table class="ranking-table"><thead><tr><th>🏆 RANG</th><th>PRONOSTIQUEUR</th><th>DÉPARTEMENT</th><th>POINTS</th></tr></thead><tbody>`;
-        ranking.forEach((user, index) => { html += `<tr class="${index === 0 ? 'gold' : ''}"><td data-label="RANG"><strong>${index + 1}</strong></td><td data-label="PRONOSTIQUEUR"><i class="fas fa-user"></i> ${escapeHtml(user.name)}</td><td data-label="DÉPARTEMENT">${escapeHtml(user.department)}</td><td data-label="POINTS"><span class="point-badge">${user.points} pts</span></td></tr>`; });
-        if (ranking.length === 0) html += '<tr><td colspan="4">Aucun participant</td></tr>';
-        html += `</tbody></table>`;
-        if (document.getElementById('usersRankingContainer')) document.getElementById('usersRankingContainer').innerHTML = html;
-        if (document.getElementById('userRankingContainer')) document.getElementById('userRankingContainer').innerHTML = html;
-    }
-
-    async function loadUserRankingForUser() { await loadUsersRanking(); }
-    document.getElementById('exportExcelBtn')?.addEventListener('click', async () => {
-        const usersSnap = await db.ref('users').once('value');
-        const users = usersSnap.val() || {};
-        const data = [['Rang', 'Nom complet', 'Département', 'Points totaux']];
-        const ranking = [];
-        for (const [userId, user] of Object.entries(users)) if (user.email !== 'wkwtunisia@gmail.com') ranking.push({ name: user.fullName || user.email, department: user.department || 'N/A', points: user.totalPoints || 0 });
-        ranking.sort((a, b) => b.points - a.points);
-        ranking.forEach((user, index) => data.push([index + 1, user.name, user.department, user.points]));
-        const ws = XLSX.utils.aoa_to_sheet(data);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'Classement World Cup 2026');
-        XLSX.writeFile(wb, `Classement_WorldCup2026_${new Date().toISOString().slice(0, 19)}.xlsx`);
-    });
-
+    // Load Admin Matches
     async function loadAdminMatchesWithPredictions() {
         const matchesSnap = await db.ref('matches').once('value');
         const matches = matchesSnap.val();
@@ -1168,40 +1026,61 @@
             const betsSnap = await db.ref('pronostics').once('value');
             const allBets = betsSnap.val() || {};
             const matchBets = [];
-            for (const [userId, bets] of Object.entries(allBets)) if (bets[matchId]) { const userSnap = await db.ref(`users/${userId}`).once('value'); matchBets.push({ userName: userSnap.val()?.fullName || userId.slice(0, 6), bet: bets[matchId] }); }
+            for (const [userId, bets] of Object.entries(allBets)) {
+                if (bets[matchId]) {
+                    const userSnap = await db.ref(`users/${userId}`).once('value');
+                    matchBets.push({ userName: userSnap.val()?.fullName || userId.slice(0, 6), bet: bets[matchId] });
+                }
+            }
             const displayHome = tempFinalResults[`${matchId}_home`] !== undefined ? tempFinalResults[`${matchId}_home`] : (match.finalHome ?? '');
             const displayAway = tempFinalResults[`${matchId}_away`] !== undefined ? tempFinalResults[`${matchId}_away`] : (match.finalAway ?? '');
-            html += `<div class="match-admin-card"><div class="match-title">🏆 ${match.homeTeam} 🆚 ${match.awayTeam} <small>(${match.datetime})</small>${match.isSpecial ? '<span class="special-badge">🌟 Match décisif x2</span>' : ''}</div>
-            <div class="points-config">🏆 Vainqueur = ${match.winnerPoints || 5} pts | 🎯 Score exact = ${match.exactScorePoints || 10} pts ${match.isSpecial ? '<strong>(x2)</strong>' : ''}</div>
-            <div class="final-result"><strong>🏁 Résultat final :</strong><input type="number" id="finalHome_${matchId}" value="${displayHome}" placeholder="0" onchange="tempFinalResults['${matchId}_home']=this.value"><span>-</span><input type="number" id="finalAway_${matchId}" value="${displayAway}" placeholder="0" onchange="tempFinalResults['${matchId}_away']=this.value"><button class="validate-btn validate-btn-primary" onclick="validateMatchResult('${matchId}')">✅ Valider</button><button class="validate-btn validate-btn-warning" onclick="resetMatchPoints('${matchId}')">🔄 Reset</button></div>
-            <table style="width:100%; margin-top:15px;"><thead><tr><th>Utilisateur</th><th>Pronostic</th><th>Points</th></tr></thead><tbody>`;
-            for (const betItem of matchBets) html += `<tr><td><i class="fas fa-user"></i> ${escapeHtml(betItem.userName)}</td><td><strong>${betItem.bet.homeScore} - ${betItem.bet.awayScore}</strong></td><td><span class="point-badge">${betItem.bet.pointsEarned || 0} pts</span></td></tr>`;
+            html += `<div class="match-admin-card">
+                <div class="match-title">🏆 ${match.homeTeam} 🆚 ${match.awayTeam} <small>(${match.datetime})</small>${match.isSpecial ? '<span class="special-badge">🌟 Match décisif x2</span>' : ''}${match.closed ? '<span class="completed-badge">Terminé</span>' : ''}</div>
+                <div class="points-config">🏆 Vainqueur = ${match.winnerPoints || 5} pts | 🎯 Score exact = ${match.exactScorePoints || 10} pts ${match.isSpecial ? '<strong>(x2)</strong>' : ''}</div>
+                <div class="final-result">
+                    <strong>🏁 Résultat final :</strong>
+                    <input type="number" id="finalHome_${matchId}" value="${displayHome}" placeholder="0" onchange="tempFinalResults['${matchId}_home']=this.value">
+                    <span>-</span>
+                    <input type="number" id="finalAway_${matchId}" value="${displayAway}" placeholder="0" onchange="tempFinalResults['${matchId}_away']=this.value">
+                    <button class="validate-btn btn-primary" onclick="validateMatchResult('${matchId}')">✅ Valider</button>
+                    <button class="validate-btn btn-warning" onclick="resetMatchPoints('${matchId}')">🔄 Reset</button>
+                </div>
+                <table style="width:100%; margin-top:15px;"><thead><tr><th>Utilisateur</th><th>Pronostic</th><th>Points</th></tr></thead><tbody>`;
+            for (const betItem of matchBets) {
+                html += `<tr><td><i class="fas fa-user"></i> ${escapeHtml(betItem.userName)}</td><td><strong>${betItem.bet.homeScore} - ${betItem.bet.awayScore}</strong></td><td><span class="point-badge">${betItem.bet.pointsEarned || 0} pts</span></td></tr>`;
+            }
             if (matchBets.length === 0) html += '<tr><td colspan="3">Aucun pronostic</td></tr>';
             html += `</tbody></table></div>`;
         }
         document.getElementById('adminMatchesContainer').innerHTML = html;
     }
 
+    // Validate Match Result
     window.validateMatchResult = async (matchId) => {
         const finalHome = parseInt(document.getElementById(`finalHome_${matchId}`).value);
         const finalAway = parseInt(document.getElementById(`finalAway_${matchId}`).value);
         if (isNaN(finalHome) || isNaN(finalAway)) { alert('Entrez un score valide'); return; }
         const matchSnap = await db.ref(`matches/${matchId}`).once('value');
         const match = matchSnap.val();
-        const winnerPoints = match.winnerPoints || 5, exactScorePoints = match.exactScorePoints || 10, multiplier = match.isSpecial ? 2 : 1;
+        const winnerPoints = match.winnerPoints || 5;
+        const exactScorePoints = match.exactScorePoints || 10;
+        const multiplier = match.isSpecial ? 2 : 1;
         const betsSnap = await db.ref('pronostics').once('value');
         const allBets = betsSnap.val() || {};
-        const updates = {}, affectedUsers = new Set();
-        for (const [userId, bets] of Object.entries(allBets)) if (bets[matchId]) {
-            const bet = bets[matchId];
-            let points = 0;
-            const exactScore = (bet.homeScore === finalHome && bet.awayScore === finalAway);
-            const correctWinner = ((finalHome > finalAway && bet.homeScore > bet.awayScore) || (finalAway > finalHome && bet.awayScore > bet.homeScore) || (finalHome === finalAway && bet.homeScore === bet.awayScore));
-            if (exactScore) points = exactScorePoints * multiplier;
-            else if (correctWinner) points = winnerPoints * multiplier;
-            updates[`pronostics/${userId}/${matchId}/pointsEarned`] = points;
-            updates[`pronostics/${userId}/${matchId}/validated`] = true;
-            affectedUsers.add(userId);
+        const updates = {};
+        const affectedUsers = new Set();
+        for (const [userId, bets] of Object.entries(allBets)) {
+            if (bets[matchId]) {
+                const bet = bets[matchId];
+                let points = 0;
+                const exactScore = (bet.homeScore === finalHome && bet.awayScore === finalAway);
+                const correctWinner = ((finalHome > finalAway && bet.homeScore > bet.awayScore) || (finalAway > finalHome && bet.awayScore > bet.homeScore) || (finalHome === finalAway && bet.homeScore === bet.awayScore));
+                if (exactScore) points = exactScorePoints * multiplier;
+                else if (correctWinner) points = winnerPoints * multiplier;
+                updates[`pronostics/${userId}/${matchId}/pointsEarned`] = points;
+                updates[`pronostics/${userId}/${matchId}/validated`] = true;
+                affectedUsers.add(userId);
+            }
         }
         updates[`matches/${matchId}/finalHome`] = finalHome;
         updates[`matches/${matchId}/finalAway`] = finalAway;
@@ -1209,31 +1088,41 @@
         await db.ref().update(updates);
         delete tempFinalResults[`${matchId}_home`];
         delete tempFinalResults[`${matchId}_away`];
-        for (let userId of affectedUsers) await recalcUserTotalPoints(userId);
+        for (let userId of affectedUsers) {
+            await recalcUserTotalPoints(userId);
+            await updateUserBadges(userId);
+        }
         alert(`Résultat ${finalHome}-${finalAway} enregistré !`);
-        loadUsersRanking();
+        loadRanking('usersRankingContainer');
         loadAdminMatchesWithPredictions();
+        loadAllHistory('historyContainer');
     };
 
     window.resetMatchPoints = async (matchId) => {
         if (!confirm('Remettre à zéro ce match ?')) return;
         const betsSnap = await db.ref('pronostics').once('value');
         const allBets = betsSnap.val() || {};
-        const updates = {}, affectedUsers = new Set();
-        for (const [userId, bets] of Object.entries(allBets)) if (bets[matchId]) {
-            updates[`pronostics/${userId}/${matchId}/pointsEarned`] = 0;
-            updates[`pronostics/${userId}/${matchId}/validated`] = false;
-            affectedUsers.add(userId);
+        const updates = {};
+        const affectedUsers = new Set();
+        for (const [userId, bets] of Object.entries(allBets)) {
+            if (bets[matchId]) {
+                updates[`pronostics/${userId}/${matchId}/pointsEarned`] = 0;
+                updates[`pronostics/${userId}/${matchId}/validated`] = false;
+                affectedUsers.add(userId);
+            }
         }
         updates[`matches/${matchId}/finalHome`] = null;
         updates[`matches/${matchId}/finalAway`] = null;
         updates[`matches/${matchId}/closed`] = false;
         await db.ref().update(updates);
-        for (let uid of affectedUsers) await recalcUserTotalPoints(uid);
+        for (let uid of affectedUsers) {
+            await recalcUserTotalPoints(uid);
+            await updateUserBadges(uid);
+        }
         delete tempFinalResults[`${matchId}_home`];
         delete tempFinalResults[`${matchId}_away`];
         alert('Reset effectué');
-        loadUsersRanking();
+        loadRanking('usersRankingContainer');
         loadAdminMatchesWithPredictions();
     };
 
@@ -1245,35 +1134,71 @@
         await db.ref(`users/${userId}/totalPoints`).set(total);
     }
 
-    async function loadUserMatches(userId) {
+    // Load User Matches Separated (Active vs Completed)
+    async function loadUserMatchesSeparated(userId) {
         const matchesSnap = await db.ref('matches').once('value');
         const matches = matchesSnap.val();
-        if (!matches) { document.getElementById('userMatchesList').innerHTML = '<div style="text-align:center">Aucun match</div>'; return; }
+        if (!matches) {
+            document.getElementById('userMatchesActiveList').innerHTML = '<div style="text-align:center">Aucun match</div>';
+            document.getElementById('userMatchesCompletedList').innerHTML = '<div style="text-align:center">Aucun match terminé</div>';
+            return;
+        }
+        
         const userBetsSnap = await db.ref(`pronostics/${userId}`).once('value');
         const userBets = userBetsSnap.val() || {};
-        let html = '<div class="matches-grid">';
+        
+        let activeHtml = '<div class="matches-grid">';
+        let completedHtml = '<div class="matches-grid">';
+        
         for (const [matchId, match] of Object.entries(matches)) {
             const existing = userBets[matchId];
             const isClosed = match.closed === true;
             const multiplier = match.isSpecial ? 2 : 1;
-            html += `<div class="match-card"><div class="match-teams">🏆 ${match.homeTeam} 🆚 ${match.awayTeam} 🏆${match.isSpecial ? '<span class="special-badge">🌟 Match décisif x2</span>' : ''}</div>
-            <div class="match-date"><i class="far fa-calendar"></i> ${match.datetime}${match.finalHome !== null ? ` (Résultat: ${match.finalHome}-${match.finalAway})` : ''}</div>
-            <div class="points-config" style="text-align:center;">🏆 Vainqueur=${(match.winnerPoints || 5) * multiplier} pts | 🎯 Score exact=${(match.exactScorePoints || 10) * multiplier} pts</div>`;
+            
+            const cardHtml = `<div class="match-card">
+                <div class="match-teams">🏆 ${match.homeTeam} 🆚 ${match.awayTeam} 🏆${match.isSpecial ? '<span class="special-badge">🌟 Match décisif x2</span>' : ''}</div>
+                <div class="match-date"><i class="far fa-calendar"></i> ${match.datetime}${match.finalHome !== null ? ` (Résultat: ${match.finalHome}-${match.finalAway})` : ''}</div>
+                <div class="points-config" style="text-align:center;">🏆 Vainqueur=${(match.winnerPoints || 5) * multiplier} pts | 🎯 Score exact=${(match.exactScorePoints || 10) * multiplier} pts</div>`;
+            
+            let content = '';
             if (!isClosed && !existing) {
-                html += `<div class="score-inputs"><div class="score-input"><label>${match.homeTeam}</label><input type="number" id="home_${matchId}" placeholder="0"></div><div class="score-input"><label>${match.awayTeam}</label><input type="number" id="away_${matchId}" placeholder="0"></div></div>
-                <button class="btn btn-primary" onclick="saveUserBet('${matchId}', '${userId}')"><i class="fas fa-save"></i> Enregistrer mon pronostic</button>`;
-            } else if (existing) {
-                html += `<div class="score-display"><i class="fas fa-check-circle"></i> Votre pronostic: <strong>${existing.homeScore} - ${existing.awayScore}</strong></div>`;
-                if (isClosed && existing.validated) html += `<div class="points-earned"><i class="fas fa-star"></i> Points: ${existing.pointsEarned || 0} pts</div>`;
-                else if (!isClosed) html += `<div class="bet-info"><i class="fas fa-lock"></i> Pronostic verrouillé</div>`;
+                content = `<div class="score-inputs">
+                    <div class="score-input"><label>${match.homeTeam}</label><input type="number" id="home_${matchId}" placeholder="0" min="0"></div>
+                    <div class="score-input"><label>${match.awayTeam}</label><input type="number" id="away_${matchId}" placeholder="0" min="0"></div>
+                </div>
+                <button class="btn btn-primary" onclick="saveBet('${matchId}', '${userId}')"><i class="fas fa-save"></i> Enregistrer mon pronostic</button>`;
+                activeHtml += cardHtml + content + `</div>`;
+            } 
+            else if (existing) {
+                content = `<div class="bet-info"><i class="fas fa-check-circle"></i> Votre pronostic: <strong>${existing.homeScore} - ${existing.awayScore}</strong></div>`;
+                if (isClosed && existing.validated) {
+                    content += `<div class="points-earned"><i class="fas fa-star"></i> Points gagnés: ${existing.pointsEarned || 0} pts</div>`;
+                } else if (!isClosed) {
+                    content += `<div class="bet-info"><i class="fas fa-lock"></i> Pronostic verrouillé - Modification impossible</div>`;
+                }
+                if (isClosed) {
+                    completedHtml += cardHtml + content + `</div>`;
+                } else {
+                    activeHtml += cardHtml + content + `</div>`;
+                }
+            } 
+            else if (isClosed) {
+                content = `<div class="bet-info"><i class="fas fa-times-circle"></i> Match terminé - Vous n'avez pas pronostiqué</div>`;
+                completedHtml += cardHtml + content + `</div>`;
             }
-            html += `</div>`;
         }
-        html += `</div>`;
-        document.getElementById('userMatchesList').innerHTML = html;
+        
+        activeHtml += `</div>`;
+        completedHtml += `</div>`;
+        
+        if (activeHtml === '<div class="matches-grid"></div>') activeHtml = '<div style="text-align:center; padding:40px;">Aucun match à pronostiquer pour le moment</div>';
+        if (completedHtml === '<div class="matches-grid"></div>') completedHtml = '<div style="text-align:center; padding:40px;">Aucun match terminé</div>';
+        
+        document.getElementById('userMatchesActiveList').innerHTML = activeHtml;
+        document.getElementById('userMatchesCompletedList').innerHTML = completedHtml;
     }
 
-    window.saveUserBet = async (matchId, userId) => {
+    window.saveBet = async (matchId, userId) => {
         const homeScore = parseInt(document.getElementById(`home_${matchId}`).value);
         const awayScore = parseInt(document.getElementById(`away_${matchId}`).value);
         if (isNaN(homeScore) || isNaN(awayScore)) { alert('Entrez des scores valides'); return; }
@@ -1281,10 +1206,38 @@
         if (existingBet.exists()) { alert('Pronostic déjà enregistré !'); return; }
         const matchSnap = await db.ref(`matches/${matchId}`).once('value');
         if (matchSnap.val()?.closed) { alert('Match terminé'); return; }
-        await db.ref(`pronostics/${userId}/${matchId}`).set({ homeScore, awayScore, timestamp: Date.now(), pointsEarned: 0, validated: false });
+        await db.ref(`pronostics/${userId}/${matchId}`).set({
+            homeScore: homeScore,
+            awayScore: awayScore,
+            timestamp: Date.now(),
+            pointsEarned: 0,
+            validated: false
+        });
         alert('✓ Pronostic enregistré !');
-        loadUserMatches(userId);
+        loadUserMatchesSeparated(userId);
+        loadUserHistory(userId, 'userHistoryContainer');
+        await updateUserBadges(userId);
+        displayBadges(userId, 'userBadgesContainer');
     };
+
+    // Export Excel
+    document.getElementById('exportExcelBtn')?.addEventListener('click', async () => {
+        const usersSnap = await db.ref('users').once('value');
+        const users = usersSnap.val() || {};
+        const data = [['Rang', 'Nom complet', 'Département', 'Points totaux', 'Badges']];
+        const ranking = [];
+        for (const [userId, user] of Object.entries(users)) {
+            if (user.email !== 'wkwtunisia@gmail.com') {
+                ranking.push({ name: user.fullName || user.email, department: user.department || 'N/A', points: user.totalPoints || 0, badges: (user.badges || []).join(', ') });
+            }
+        }
+        ranking.sort((a, b) => b.points - a.points);
+        ranking.forEach((user, index) => data.push([index + 1, user.name, user.department, user.points, user.badges]));
+        const ws = XLSX.utils.aoa_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Classement');
+        XLSX.writeFile(wb, `Classement_WorldCup_${new Date().toISOString().slice(0, 19)}.xlsx`);
+    });
 
     function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])); }
 </script>
