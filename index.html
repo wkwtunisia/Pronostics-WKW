@@ -90,6 +90,11 @@
             to { transform: translateX(0); opacity: 1; }
         }
 
+        @keyframes pulseRed {
+            0%, 100% { background: rgba(239,68,68,0.1); border-color: #ef4444; }
+            50% { background: rgba(239,68,68,0.3); border-color: #dc2626; }
+        }
+
         /* Notification Toast */
         .notification-toast {
             position: fixed;
@@ -428,6 +433,41 @@
             color: white;
         }
 
+        /* Bloqué */
+        .btn-disabled {
+            background: #94a3b8;
+            color: #475569;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        .btn-disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .closed-badge {
+            background: #ef4444;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-block;
+            margin-left: 10px;
+            animation: pulseRed 1.5s infinite;
+        }
+
+        .countdown-timer {
+            background: #1e293b;
+            color: #FFD700;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-align: center;
+            margin-top: 10px;
+        }
+
         .ranking-table {
             width: 100%;
             background: white;
@@ -451,7 +491,7 @@
         .ranking-table tr:hover { background: #fef9e7; }
         .gold { background: linear-gradient(135deg, #fef3c7, #fde68a); font-weight: bold; }
 
-        /* ========== CSS RÉSULTAT FINAL STYLISÉ ========== */
+        /* CSS Résultat final stylisé */
         .final-result-section {
             background: linear-gradient(135deg, #1e293b, #0f172a);
             border-radius: 24px;
@@ -839,7 +879,7 @@
             <select id="regDepartment">
                 <option>Informatique</option><option>Logistique</option><option>RH</option><option>Finance</option>
                 <option>Achat</option><option>UAP 1</option><option>UAP 2</option><option>Qualité</option>
-                <option>Méthode</option><option>Amélioration Continue</option><option>Indus</option><option>Valréas</option>
+                <option>Méthode</option><option>Amélioration Continue</option><option>Indus</option><option>Contenu</option>
             </select>
         </div>
         <div class="form-group"><label><i class="fas fa-envelope"></i> Email</label><input type="email" id="regEmail" placeholder="email@exemple.com"></div>
@@ -961,6 +1001,7 @@
     const db = firebase.database();
 
     let tempFinalResults = {};
+    let countdownIntervals = {};
 
     // Notification System
     function showNotification(title, message, type = 'info') {
@@ -987,6 +1028,30 @@
         element.style.display = 'block';
         showNotification(isError ? 'Erreur' : 'Succès', text, isError ? 'error' : 'success');
         setTimeout(() => element.style.display = 'none', 3000);
+    }
+
+    // Vérifier si un match est fermé pour les paris (30 min avant)
+    function isMatchClosedForBetting(matchDateTime) {
+        if (!matchDateTime) return false;
+        const matchTime = new Date(matchDateTime).getTime();
+        const now = new Date().getTime();
+        const THIRTY_MINUTES = 30 * 60 * 1000;
+        return now >= (matchTime - THIRTY_MINUTES);
+    }
+
+    // Formater le temps restant
+    function getTimeRemaining(matchDateTime) {
+        const matchTime = new Date(matchDateTime).getTime();
+        const now = new Date().getTime();
+        const thirtyMinBefore = matchTime - (30 * 60 * 1000);
+        
+        if (now >= matchTime) return { type: 'started', text: 'Match commencé' };
+        if (now >= thirtyMinBefore) return { type: 'closed', text: '🔒 Parrainage fermé' };
+        
+        const remaining = thirtyMinBefore - now;
+        const minutes = Math.floor(remaining / (60 * 1000));
+        const seconds = Math.floor((remaining % (60 * 1000)) / 1000);
+        return { type: 'open', text: `⏰ Plus que ${minutes}m ${seconds}s pour parier` };
     }
 
     // Confetti Effect
@@ -1029,7 +1094,7 @@
         setTimeout(() => { canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height); }, 5000);
     }
 
-    // Podium animé
+    // Podium
     async function updatePodium() {
         const usersSnap = await db.ref('users').once('value');
         const users = usersSnap.val() || {};
@@ -1069,7 +1134,7 @@
             <div class="tutorial-content">
                 <h2><i class="fas fa-graduation-cap"></i> Bienvenue sur Pronostics WKW!</h2>
                 <div class="tutorial-step"><div class="tutorial-step-icon">1</div><div class="tutorial-step-text"><strong>📅 Choisissez un match</strong><br>Sélectionnez un match à venir dans la liste</div></div>
-                <div class="tutorial-step"><div class="tutorial-step-icon">2</div><div class="tutorial-step-text"><strong>🎯 Entrez votre pronostic</strong><br>Indiquez le score que vous prévoyez</div></div>
+                <div class="tutorial-step"><div class="tutorial-step-icon">2</div><div class="tutorial-step-text"><strong>🎯 Entrez votre pronostic</strong><br>Indiquez le score que vous prévoyez (30 min avant le match)</div></div>
                 <div class="tutorial-step"><div class="tutorial-step-icon">🏆</div><div class="tutorial-step-text"><strong>Débloquez des badges</strong><br>Succession de bons pronostics = badges spéciaux!</div></div>
                 <div class="tutorial-buttons"><button id="tutorialGotIt">J'ai compris !</button><button id="tutorialDontShow">Ne plus afficher</button></div>
             </div>
@@ -1381,6 +1446,28 @@
         await db.ref(`users/${userId}/totalPoints`).set(total);
     }
 
+    // Mise à jour du compte à rebours pour un match
+    function startMatchCountdown(matchId, matchDateTime, elementId) {
+        if (countdownIntervals[matchId]) clearInterval(countdownIntervals[matchId]);
+        
+        const updateCountdown = () => {
+            const remaining = getTimeRemaining(matchDateTime);
+            const countdownElement = document.getElementById(elementId);
+            if (countdownElement) {
+                if (remaining.type === 'closed') {
+                    countdownElement.innerHTML = `<div class="countdown-timer" style="background:#ef4444;"><i class="fas fa-lock"></i> ${remaining.text}</div>`;
+                } else if (remaining.type === 'open') {
+                    countdownElement.innerHTML = `<div class="countdown-timer"><i class="fas fa-hourglass-half"></i> ${remaining.text}</div>`;
+                } else {
+                    countdownElement.innerHTML = `<div class="countdown-timer" style="background:#ef4444;"><i class="fas fa-clock"></i> ${remaining.text}</div>`;
+                }
+            }
+        };
+        
+        updateCountdown();
+        countdownIntervals[matchId] = setInterval(updateCountdown, 1000);
+    }
+
     async function loadUserMatchesSeparated(userId) {
         const matchesSnap = await db.ref('matches').once('value');
         const matches = matchesSnap.val();
@@ -1393,49 +1480,80 @@
         const userBets = userBetsSnap.val() || {};
         let activeHtml = '<div class="matches-grid">';
         let completedHtml = '<div class="matches-grid">';
+        
         for (const [matchId, match] of Object.entries(matches)) {
             const existing = userBets[matchId];
             const isClosed = match.closed === true;
             const multiplier = match.isSpecial ? 2 : 1;
+            const bettingClosed = !isClosed && isMatchClosedForBetting(match.datetime);
+            const timeRemaining = getTimeRemaining(match.datetime);
+            
             const cardHtml = `<div class="match-card">
                 <div class="match-teams">🏆 ${match.homeTeam} 🆚 ${match.awayTeam} 🏆${match.isSpecial ? '<span class="special-badge">🌟 Match décisif x2</span>' : ''}</div>
                 <div class="match-date"><i class="far fa-calendar"></i> ${match.datetime}${match.finalHome !== null ? ` (Résultat: ${match.finalHome}-${match.finalAway})` : ''}</div>
-                <div class="points-config" style="text-align:center;">🏆 Vainqueur=${(match.winnerPoints || 5) * multiplier} pts | 🎯 Score exact=${(match.exactScorePoints || 10) * multiplier} pts</div>`;
+                <div class="points-config" style="text-align:center;">🏆 Vainqueur=${(match.winnerPoints || 5) * multiplier} pts | 🎯 Score exact=${(match.exactScorePoints || 10) * multiplier} pts</div>
+                <div id="countdown_${matchId}"></div>`;
+            
             let content = '';
-            if (!isClosed && !existing) {
-                content = `<div class="score-inputs"><div class="score-input"><label>${match.homeTeam}</label><input type="number" id="home_${matchId}" placeholder="0" min="0"></div><div class="score-input"><label>${match.awayTeam}</label><input type="number" id="away_${matchId}" placeholder="0" min="0"></div></div>
-                <button class="btn btn-primary" onclick="saveBet('${matchId}', '${userId}')"><i class="fas fa-save"></i> Enregistrer mon pronostic</button>`;
+            if (!isClosed && !existing && !bettingClosed) {
+                content = `<div class="score-inputs"><div class="score-input"><label>${match.homeTeam}</label><input type="number" id="home_${matchId}" placeholder="0" min="0"></div>
+                <div class="score-input"><label>${match.awayTeam}</label><input type="number" id="away_${matchId}" placeholder="0" min="0"></div></div>
+                <button class="btn btn-primary" onclick="saveBetWithCheck('${matchId}', '${userId}', '${match.datetime}')"><i class="fas fa-save"></i> Enregistrer mon pronostic</button>`;
+                startMatchCountdown(matchId, match.datetime, `countdown_${matchId}`);
                 activeHtml += cardHtml + content + `</div>`;
             } 
+            else if (!isClosed && !existing && bettingClosed) {
+                content = `<div class="bet-info" style="background:#fef3c7;"><i class="fas fa-lock"></i> 🔒 Parrainage fermé - Match dans moins de 30 minutes</div>`;
+                startMatchCountdown(matchId, match.datetime, `countdown_${matchId}`);
+                activeHtml += cardHtml + content + `</div>`;
+            }
             else if (existing) {
                 content = `<div class="bet-info"><i class="fas fa-check-circle"></i> Votre pronostic: <strong>${existing.homeScore} - ${existing.awayScore}</strong></div>`;
                 if (isClosed && existing.validated) content += `<div class="points-earned"><i class="fas fa-star"></i> Points gagnés: ${existing.pointsEarned || 0} pts</div>`;
                 else if (!isClosed) content += `<div class="bet-info"><i class="fas fa-lock"></i> Pronostic verrouillé - Modification impossible</div>`;
-                if (isClosed) completedHtml += cardHtml + content + `</div>`;
-                else activeHtml += cardHtml + content + `</div>`;
+                if (isClosed) {
+                    completedHtml += cardHtml + content + `</div>`;
+                } else {
+                    startMatchCountdown(matchId, match.datetime, `countdown_${matchId}`);
+                    activeHtml += cardHtml + content + `</div>`;
+                }
             } 
             else if (isClosed) {
                 content = `<div class="bet-info"><i class="fas fa-times-circle"></i> Match terminé - Vous n'avez pas pronostiqué</div>`;
                 completedHtml += cardHtml + content + `</div>`;
             }
         }
+        
         activeHtml += `</div>`;
         completedHtml += `</div>`;
+        
         if (activeHtml === '<div class="matches-grid"></div>') activeHtml = '<div style="text-align:center; padding:40px;">Aucun match à pronostiquer pour le moment</div>';
         if (completedHtml === '<div class="matches-grid"></div>') completedHtml = '<div style="text-align:center; padding:40px;">Aucun match terminé</div>';
+        
         document.getElementById('userMatchesActiveList').innerHTML = activeHtml;
         document.getElementById('userMatchesCompletedList').innerHTML = completedHtml;
     }
 
-    window.saveBet = async (matchId, userId) => {
+    window.saveBetWithCheck = async (matchId, userId, matchDateTime) => {
+        if (isMatchClosedForBetting(matchDateTime)) {
+            showNotification('Action impossible', 'Les paris sont fermés 30 minutes avant le match !', 'error');
+            return;
+        }
+        
         const homeScore = parseInt(document.getElementById(`home_${matchId}`).value);
         const awayScore = parseInt(document.getElementById(`away_${matchId}`).value);
         if (isNaN(homeScore) || isNaN(awayScore)) { alert('Entrez des scores valides'); return; }
+        
         const existingBet = await db.ref(`pronostics/${userId}/${matchId}`).once('value');
         if (existingBet.exists()) { alert('Pronostic déjà enregistré !'); return; }
+        
         const matchSnap = await db.ref(`matches/${matchId}`).once('value');
         if (matchSnap.val()?.closed) { alert('Match terminé'); return; }
-        await db.ref(`pronostics/${userId}/${matchId}`).set({ homeScore, awayScore, timestamp: Date.now(), pointsEarned: 0, validated: false });
+        
+        await db.ref(`pronostics/${userId}/${matchId}`).set({ 
+            homeScore, awayScore, timestamp: Date.now(), pointsEarned: 0, validated: false 
+        });
+        
         showNotification('Pronostic enregistré !', `${homeScore} - ${awayScore}`, 'success');
         loadUserMatchesSeparated(userId);
         loadUserHistory(userId, 'userHistoryContainer');
