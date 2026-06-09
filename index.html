@@ -10,6 +10,8 @@
     <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
     <!-- SheetJS for Excel Export -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    <!-- Chart.js pour graphiques -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- Google Fonts -->
@@ -468,28 +470,48 @@
             margin-top: 10px;
         }
 
-        .ranking-table {
+        /* Classement complet avec tous les points */
+        .ranking-full-table {
             width: 100%;
             background: white;
             border-radius: 20px;
             overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
         }
 
-        .ranking-table th {
+        .ranking-full-table th {
             background: linear-gradient(135deg, #FFD700, #FFA500);
             color: #0a0f1e;
             padding: 14px;
             font-weight: 700;
+            text-align: center;
         }
 
-        .ranking-table td {
+        .ranking-full-table td {
             padding: 12px;
             text-align: center;
             border-bottom: 1px solid #f1f5f9;
         }
 
-        .ranking-table tr:hover { background: #fef9e7; }
-        .gold { background: linear-gradient(135deg, #fef3c7, #fde68a); font-weight: bold; }
+        .ranking-full-table tr:hover { background: #fef9e7; }
+        .gold-row { background: linear-gradient(135deg, #fef3c7, #fde68a); font-weight: bold; }
+        .silver-row { background: linear-gradient(135deg, #f0f0f0, #e0e0e0); }
+        .bronze-row { background: linear-gradient(135deg, #fde68a, #fcd34d); }
+
+        .progress-bar-container {
+            width: 100%;
+            background: #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+            height: 8px;
+        }
+
+        .progress-bar {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
 
         /* CSS Résultat final stylisé */
         .final-result-section {
@@ -831,6 +853,35 @@
             box-shadow: 0 25px 50px rgba(0,0,0,0.2);
         }
 
+        .ranking-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            border-radius: 16px;
+            padding: 15px 25px;
+            text-align: center;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .stat-card .stat-value {
+            font-size: 28px;
+            font-weight: 800;
+            color: #FFD700;
+        }
+
+        .stat-card .stat-label {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 5px;
+        }
+
         @media (max-width: 768px) {
             .mobile-menu-toggle { display: block; }
             .sidebar { transform: translateX(-100%); width: 280px; z-index: 100; }
@@ -842,6 +893,9 @@
             .podium-step { width: 100%; }
             .final-result input { width: 70px; font-size: 20px; padding: 10px; }
             .final-result span { font-size: 24px; width: 45px; height: 45px; }
+            .ranking-full-table { font-size: 12px; }
+            .ranking-full-table th, .ranking-full-table td { padding: 8px; }
+            .ranking-stats { flex-direction: column; }
         }
     </style>
 </head>
@@ -981,7 +1035,12 @@
             </div>
             <div id="userHistoryPanel" class="content-panel"><div class="admin-panel"><h3>Mon historique</h3><div id="userHistoryContainer"></div></div></div>
             <div id="userBadgesPanel" class="content-panel"><div class="admin-panel"><h3>Mes badges</h3><div id="userBadgesContainer"></div></div></div>
-            <div id="userRankingPanel" class="content-panel"><div class="admin-panel"><h3>Classement général</h3><div id="userRankingContainer"></div></div></div>
+            <div id="userRankingPanel" class="content-panel">
+                <div class="admin-panel">
+                    <h3><i class="fas fa-trophy"></i> Classement général complet</h3>
+                    <div id="userRankingContainer"></div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -1017,7 +1076,7 @@
             </div>
             <div class="toast-close"><i class="fas fa-times"></i></div>
         `;
-        container.appendChild(toast);
+        document.getElementById('notificationContainer').appendChild(toast);
         toast.querySelector('.toast-close').onclick = () => toast.remove();
         setTimeout(() => toast.remove(), 5000);
     }
@@ -1233,22 +1292,76 @@
         document.getElementById(containerId).innerHTML = html;
     }
 
-    async function loadRanking(containerId) {
+    // Classement complet avec tous les points
+    async function loadCompleteRanking(containerId) {
         const usersSnap = await db.ref('users').once('value');
         const users = usersSnap.val() || {};
         const ranking = [];
+        let maxPoints = 0;
+        
         for (const [uid, user] of Object.entries(users)) {
-            if (user.email !== 'wkwtunisia@gmail.com') ranking.push({ name: user.fullName || user.email, points: user.totalPoints || 0 });
+            if (user.email !== 'wkwtunisia@gmail.com') {
+                const points = user.totalPoints || 0;
+                ranking.push({ 
+                    name: user.fullName || user.email, 
+                    department: user.department || 'N/A', 
+                    points: points,
+                    badges: (user.badges || []).length
+                });
+                if (points > maxPoints) maxPoints = points;
+            }
         }
         ranking.sort((a, b) => b.points - a.points);
-        let html = '<table class="ranking-table"><thead><tr><th>#</th><th>Utilisateur</th><th>Points</th></tr></thead><tbody>';
-        ranking.forEach((user, i) => {
-            html += `<tr class="${i === 0 ? 'gold' : ''}"><td>${i + 1}</td><td><i class="fas fa-user"></i> ${escapeHtml(user.name)}</td><td><span class="point-badge">${user.points} pts</span></td></tr>`;
+        
+        // Calcul des statistiques
+        const totalParticipants = ranking.length;
+        const totalPoints = ranking.reduce((sum, u) => sum + u.points, 0);
+        const averagePoints = totalParticipants > 0 ? (totalPoints / totalParticipants).toFixed(1) : 0;
+        
+        let html = `
+            <div class="ranking-stats">
+                <div class="stat-card"><div class="stat-value">${totalParticipants}</div><div class="stat-label">Participants</div></div>
+                <div class="stat-card"><div class="stat-value">${totalPoints}</div><div class="stat-label">Points total</div></div>
+                <div class="stat-card"><div class="stat-value">${averagePoints}</div><div class="stat-label">Moyenne</div></div>
+            </div>
+            <table class="ranking-full-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Joueur</th>
+                        <th>Département</th>
+                        <th>Points</th>
+                        <th>Progression</th>
+                        <th>Badges</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+        
+        ranking.forEach((user, index) => {
+            let rowClass = '';
+            if (index === 0) rowClass = 'gold-row';
+            else if (index === 1) rowClass = 'silver-row';
+            else if (index === 2) rowClass = 'bronze-row';
+            
+            const progressPercent = maxPoints > 0 ? (user.points / maxPoints) * 100 : 0;
+            const medalIcon = index === 0 ? '🥇 ' : (index === 1 ? '🥈 ' : (index === 2 ? '🥉 ' : ''));
+            
+            html += `<tr class="${rowClass}">
+                <td><strong>${index + 1}</strong> ${medalIcon}</td>
+                <td><i class="fas fa-user-circle"></i> ${escapeHtml(user.name)}</td>
+                <td><i class="fas fa-building"></i> ${escapeHtml(user.department)}</td>
+                <td><span class="point-badge">${user.points} pts</span></td>
+                <td><div class="progress-bar-container"><div class="progress-bar" style="width: ${progressPercent}%"></div></div></td>
+                <td><i class="fas fa-medal"></i> ${user.badges}</td>
+            </tr>`;
         });
-        if (ranking.length === 0) html += '<tr><td colspan="3">Aucun utilisateur</td></tr>';
-        html += '</tbody></table>';
+        
+        if (ranking.length === 0) {
+            html += '<tr><td colspan="6" style="text-align:center">Aucun participant pour le moment</td></tr>';
+        }
+        
+        html += `</tbody></table>`;
         document.getElementById(containerId).innerHTML = html;
-        await updatePodium();
     }
 
     // Auth
@@ -1259,7 +1372,7 @@
                 document.getElementById('adminDashboard').classList.remove('hidden');
                 document.getElementById('userDashboard').classList.add('hidden');
                 initSidebarNavigation();
-                loadRanking('usersRankingContainer');
+                loadCompleteRanking('usersRankingContainer');
                 loadAdminMatchesWithPredictions();
                 showTutorial();
                 showNotification('Bienvenue Admin', 'Connecté avec succès', 'success');
@@ -1269,7 +1382,7 @@
                 initSidebarNavigation();
                 document.getElementById('userNameSidebar').innerText = user.email;
                 document.getElementById('userEmailSidebar').innerText = user.email;
-                loadRanking('userRankingContainer');
+                loadCompleteRanking('userRankingContainer');
                 loadUserHistory(user.uid, 'userHistoryContainer');
                 await updateUserBadges(user.uid);
                 displayBadges(user.uid, 'userBadgesContainer');
@@ -1405,7 +1518,8 @@
             await updateUserBadges(userId);
         }
         showNotification('Résultat validé', `${finalHome}-${finalAway} - Points attribués !`, 'success');
-        loadRanking('usersRankingContainer');
+        loadCompleteRanking('usersRankingContainer');
+        loadCompleteRanking('userRankingContainer');
         loadAdminMatchesWithPredictions();
         startConfetti();
     };
@@ -1434,7 +1548,8 @@
         delete tempFinalResults[`${matchId}_home`];
         delete tempFinalResults[`${matchId}_away`];
         showNotification('Reset effectué', 'Les points ont été remis à zéro', 'warning');
-        loadRanking('usersRankingContainer');
+        loadCompleteRanking('usersRankingContainer');
+        loadCompleteRanking('userRankingContainer');
         loadAdminMatchesWithPredictions();
     };
 
@@ -1568,13 +1683,13 @@
         const data = [['Rang', 'Nom complet', 'Département', 'Points totaux', 'Badges']];
         const ranking = [];
         for (const [userId, user] of Object.entries(users)) {
-            if (user.email !== 'wkwtunisia@gmail.com') ranking.push({ name: user.fullName || user.email, department: user.department || 'N/A', points: user.totalPoints || 0, badges: (user.badges || []).join(', ') });
+            if (user.email !== 'wkwtunisia@gmail.com') ranking.push({ name: user.fullName || user.email, department: user.department || 'N/A', points: user.totalPoints || 0, badges: (user.badges || []).length });
         }
         ranking.sort((a, b) => b.points - a.points);
         ranking.forEach((user, index) => data.push([index + 1, user.name, user.department, user.points, user.badges]));
         const ws = XLSX.utils.aoa_to_sheet(data);
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'Classement');
+        XLSX.utils.book_append_sheet(wb, ws, 'Classement_Complet');
         XLSX.writeFile(wb, `Classement_WorldCup_${new Date().toISOString().slice(0, 19)}.xlsx`);
         showNotification('Export Excel', 'Fichier généré avec succès', 'success');
     });
