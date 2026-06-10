@@ -882,6 +882,41 @@
             margin-top: 5px;
         }
 
+        /* Tableau des pronostics admin */
+        .bets-table {
+            width: 100%;
+            margin-top: 15px;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .bets-table th {
+            background: #f1f5f9;
+            padding: 8px;
+            text-align: left;
+        }
+        .bets-table td {
+            padding: 8px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .wc-bets-table {
+            width: 100%;
+            margin-top: 15px;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .wc-bets-table th {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #0a0f1e;
+            padding: 10px;
+            text-align: left;
+        }
+        .wc-bets-table td {
+            padding: 10px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .wc-bets-table tr:hover { background: #fef9e7; }
+
         @media (max-width: 768px) {
             .mobile-menu-toggle { display: block; }
             .sidebar { transform: translateX(-100%); width: 280px; z-index: 100; }
@@ -955,6 +990,7 @@
             </div>
             <ul class="nav-menu">
                 <li class="nav-item"><div class="nav-link active" data-panel="addMatch"><i class="fas fa-plus-circle"></i><span>Ajouter un match</span></div></li>
+                <li class="nav-item"><div class="nav-link" data-panel="worldCupWinner"><i class="fas fa-trophy"></i><span>🏆 Vainqueur CDM</span></div></li>
                 <li class="nav-item"><div class="nav-link" data-panel="matches"><i class="fas fa-chart-line"></i><span>Matchs & Pronostics</span></div></li>
                 <li class="nav-item"><div class="nav-link" data-panel="ranking"><i class="fas fa-trophy"></i><span>Classement</span></div></li>
             </ul>
@@ -977,13 +1013,32 @@
                     <div class="points-config">
                         <h4><i class="fas fa-star"></i> Configuration des points</h4>
                         <div class="points-row">
-                            <div class="point-card"><label>🏆 Vainqueur correct</label><input type="number" id="winnerPoints" value="5" min="0"></div>
-                            <div class="point-card"><label>🎯 Score exact</label><input type="number" id="exactScorePoints" value="10" min="0"></div>
+                            <div class="point-card"><label>🏆 Vainqueur correct</label><input type="number" id="winnerPoints" value="5" min="0" step="1"></div>
+                            <div class="point-card"><label>🎯 Score exact</label><input type="number" id="exactScorePoints" value="10" min="0" step="1"></div>
                         </div>
                         <div><label><input type="checkbox" id="isSpecialMatch"> 🌟 Match décisif (points x2)</label></div>
                     </div>
                     <button class="btn btn-primary" id="addMatchBtn"><i class="fas fa-save"></i> Ajouter le match</button>
                     <div id="adminMessage" class="message"></div>
+                </div>
+            </div>
+
+            <div id="worldCupWinnerPanel" class="content-panel">
+                <div class="admin-panel">
+                    <h3><i class="fas fa-trophy"></i> Vainqueur de la Coupe du Monde 2026</h3>
+                    <div class="form-group"><label>🏆 Définir l'équipe gagnante</label>
+                        <select id="adminWinnerTeam" style="width:100%; padding:14px;">
+                            <option value="">-- Sélectionnez --</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" id="setWinnerBtn">Valider le vainqueur (15 points)</button>
+                    <div id="winnerMessage" style="margin-top:15px;"></div>
+                    
+                    <!-- Tableau des pronostics des utilisateurs pour le vainqueur CDM -->
+                    <div style="margin-top:30px;">
+                        <h4><i class="fas fa-users"></i> Tous les pronostics des utilisateurs</h4>
+                        <div id="allWorldCupBetsContainer"></div>
+                    </div>
                 </div>
             </div>
 
@@ -1003,7 +1058,8 @@
                 <p>FIFA World Cup 2026</p>
             </div>
             <ul class="nav-menu">
-                <li class="nav-item"><div class="nav-link active" data-panel="userMatchesActive"><i class="fas fa-calendar-alt"></i><span>Matchs à pronostiquer</span></div></li>
+                <li class="nav-item"><div class="nav-link active" data-panel="worldCupBet"><i class="fas fa-trophy"></i><span>🏆 Vainqueur CDM</span></div></li>
+                <li class="nav-item"><div class="nav-link" data-panel="userMatchesActive"><i class="fas fa-calendar-alt"></i><span>Matchs à pronostiquer</span></div></li>
                 <li class="nav-item"><div class="nav-link" data-panel="userMatchesCompleted"><i class="fas fa-check-circle"></i><span>Matchs terminés</span></div></li>
                 <li class="nav-item"><div class="nav-link" data-panel="userHistory"><i class="fas fa-history"></i><span>Mon historique</span></div></li>
                 <li class="nav-item"><div class="nav-link" data-panel="userBadges"><i class="fas fa-medal"></i><span>Mes badges</span></div></li>
@@ -1027,7 +1083,20 @@
                 <div class="podium" id="podiumContent"></div>
             </div>
 
-            <div id="userMatchesActivePanel" class="content-panel active">
+            <div id="worldCupBetPanel" class="content-panel active">
+                <div class="world-cup-bet-card" style="background: linear-gradient(135deg, #1e293b, #0f172a); border-radius: 24px; padding: 25px; margin-bottom: 25px; border: 2px solid #FFD700; text-align: center;">
+                    <h3><i class="fas fa-trophy"></i> Qui va gagner la Coupe du Monde 2026 ?</h3>
+                    <div class="points-value" style="font-size: 48px; font-weight: 800; color: #FFD700; margin: 15px 0;">🏆 15 POINTS 🏆</div>
+                    <div id="wcCountdown"></div>
+                    <select id="worldCupWinnerSelect" class="team-select" style="width: 100%; max-width: 350px; margin: 20px auto; padding: 15px; border-radius: 50px; border: 2px solid #FFD700;">
+                        <option value="">-- Sélectionnez une équipe --</option>
+                    </select>
+                    <button class="btn btn-primary" id="saveWorldCupBetBtn">🏆 Enregistrer mon pronostic</button>
+                    <div id="userWinnerBetDisplay" style="margin-top:15px; padding:10px; background:rgba(255,215,0,0.2); border-radius:16px;"></div>
+                </div>
+            </div>
+
+            <div id="userMatchesActivePanel" class="content-panel">
                 <div class="admin-panel"><h3><i class="fas fa-calendar-alt"></i> Matchs à pronostiquer</h3><div id="userMatchesActiveList" class="matches-grid"></div></div>
             </div>
             <div id="userMatchesCompletedPanel" class="content-panel">
@@ -1059,12 +1128,21 @@
     const auth = firebase.auth();
     const db = firebase.database();
 
+    // Liste complète des équipes pour la Coupe du Monde 2026
+    const nationalTeams = [
+        "France", "Brésil", "Argentine", "Allemagne", "Angleterre", "Espagne", "Italie", "Pays-Bas",
+        "Portugal", "Belgique", "USA", "Mexique", "Maroc", "Sénégal", "Tunisie", "Égypte", "Nigéria",
+        "Cameroun", "Ghana", "Côte d'Ivoire", "Japon", "Corée du Sud", "Arabie Saoudite", "Australie",
+        "Uruguay", "Colombie", "Chili", "Pérou", "Croatie", "Serbie", "Suisse", "Suède", "Danemark",
+        "Pologne", "République Tchèque", "Autriche", "Turquie", "Canada", "Costa Rica", "Nouvelle-Zélande"
+    ];
+
     let tempFinalResults = {};
     let countdownIntervals = {};
 
-    // Notification System
     function showNotification(title, message, type = 'info') {
         const container = document.getElementById('notificationContainer');
+        if(!container) return;
         const toast = document.createElement('div');
         toast.className = `toast toast-${type}`;
         const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', info: 'fa-info-circle', warning: 'fa-exclamation-triangle' };
@@ -1076,12 +1154,13 @@
             </div>
             <div class="toast-close"><i class="fas fa-times"></i></div>
         `;
-        document.getElementById('notificationContainer').appendChild(toast);
+        container.appendChild(toast);
         toast.querySelector('.toast-close').onclick = () => toast.remove();
         setTimeout(() => toast.remove(), 5000);
     }
 
     function showMessage(element, text, isError = true) {
+        if(!element) return;
         element.textContent = text;
         element.className = `message ${isError ? 'error' : 'success'}`;
         element.style.display = 'block';
@@ -1089,33 +1168,28 @@
         setTimeout(() => element.style.display = 'none', 3000);
     }
 
-    // Vérifier si un match est fermé pour les paris (30 min avant)
     function isMatchClosedForBetting(matchDateTime) {
         if (!matchDateTime) return false;
         const matchTime = new Date(matchDateTime).getTime();
         const now = new Date().getTime();
-        const THIRTY_MINUTES = 30 * 60 * 1000;
-        return now >= (matchTime - THIRTY_MINUTES);
+        return now >= (matchTime - 30 * 60 * 1000);
     }
 
-    // Formater le temps restant
     function getTimeRemaining(matchDateTime) {
         const matchTime = new Date(matchDateTime).getTime();
         const now = new Date().getTime();
         const thirtyMinBefore = matchTime - (30 * 60 * 1000);
-        
         if (now >= matchTime) return { type: 'started', text: 'Match commencé' };
-        if (now >= thirtyMinBefore) return { type: 'closed', text: '🔒 Parrainage fermé' };
-        
+        if (now >= thirtyMinBefore) return { type: 'closed', text: '🔒 Paris fermés' };
         const remaining = thirtyMinBefore - now;
         const minutes = Math.floor(remaining / (60 * 1000));
         const seconds = Math.floor((remaining % (60 * 1000)) / 1000);
         return { type: 'open', text: `⏰ Plus que ${minutes}m ${seconds}s pour parier` };
     }
 
-    // Confetti Effect
     function startConfetti() {
         const canvas = document.getElementById('confetti-canvas');
+        if(!canvas) return;
         const ctx = canvas.getContext('2d');
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
@@ -1150,41 +1224,42 @@
             if (active) requestAnimationFrame(animate);
         }
         animate();
-        setTimeout(() => { canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height); }, 5000);
+        setTimeout(() => { ctx.clearRect(0, 0, canvas.width, canvas.height); }, 5000);
     }
 
-    // Podium
     async function updatePodium() {
-        const usersSnap = await db.ref('users').once('value');
-        const users = usersSnap.val() || {};
-        const ranking = [];
-        for (const [uid, user] of Object.entries(users)) {
-            if (user.email !== 'wkwtunisia@gmail.com') {
-                ranking.push({ name: user.fullName || user.email, points: user.totalPoints || 0 });
+        try {
+            const usersSnap = await db.ref('users').once('value');
+            const users = usersSnap.val() || {};
+            const ranking = [];
+            for (const [uid, user] of Object.entries(users)) {
+                if (user.email !== 'wkwtunisia@gmail.com') {
+                    ranking.push({ name: user.fullName || user.email, points: user.totalPoints || 0 });
+                }
             }
-        }
-        ranking.sort((a, b) => b.points - a.points);
-        const top3 = ranking.slice(0, 3);
-        let html = '';
-        const medals = ['🥇', '🥈', '🥉'];
-        const colors = ['#FFD700', '#C0C0C0', '#CD7F32'];
-        const heights = [140, 100, 80];
-        for (let i = 0; i < top3.length; i++) {
-            const user = top3[i];
-            html += `<div class="podium-item podium-${i+1}">
-                <div class="podium-icon">${medals[i]}</div>
-                <div class="podium-step" style="height: ${heights[i]}px; background: linear-gradient(135deg, ${colors[i]}, ${colors[i]}CC);">
-                    <span style="font-size: 36px; font-weight: 800;">${i+1}</span>
-                </div>
-                <div class="podium-name">${escapeHtml(user.name)}</div>
-                <div class="podium-points">${user.points} pts</div>
-            </div>`;
-        }
-        document.getElementById('podiumContent').innerHTML = html;
-        if (top3.length > 0 && top3[0].points > 0) startConfetti();
+            ranking.sort((a, b) => b.points - a.points);
+            const top3 = ranking.slice(0, 3);
+            const podiumDiv = document.getElementById('podiumContent');
+            if(!podiumDiv) return;
+            let html = '';
+            const medals = ['🥇', '🥈', '🥉'];
+            const colors = ['#FFD700', '#C0C0C0', '#CD7F32'];
+            const heights = [140, 100, 80];
+            for (let i = 0; i < top3.length; i++) {
+                html += `<div class="podium-item podium-${i+1}">
+                    <div class="podium-icon">${medals[i]}</div>
+                    <div class="podium-step" style="height: ${heights[i]}px; background: linear-gradient(135deg, ${colors[i]}, ${colors[i]}CC);">
+                        <span style="font-size: 36px; font-weight: 800;">${i+1}</span>
+                    </div>
+                    <div class="podium-name">${escapeHtml(top3[i].name)}</div>
+                    <div class="podium-points">${top3[i].points} pts</div>
+                </div>`;
+            }
+            podiumDiv.innerHTML = html;
+            if (top3.length > 0 && top3[0].points > 0) startConfetti();
+        } catch(e) { console.warn(e); }
     }
 
-    // Tutoriel
     function showTutorial() {
         if (localStorage.getItem('tutorial_dont_show') === 'true') return;
         const modal = document.createElement('div');
@@ -1206,26 +1281,23 @@
         };
     }
 
-    // Mobile menu
-    document.getElementById('mobileMenuToggle')?.addEventListener('click', () => {
-        document.querySelectorAll('.sidebar').forEach(s => s.classList.toggle('open'));
-    });
-
     function initSidebarNavigation() {
         document.querySelectorAll('.nav-link').forEach(link => {
             link.addEventListener('click', () => {
                 const panelId = link.getAttribute('data-panel');
                 const parent = link.closest('.dashboard-layout');
-                parent.querySelectorAll('.content-panel').forEach(p => p.classList.remove('active'));
-                if (document.getElementById(`${panelId}Panel`)) document.getElementById(`${panelId}Panel`).classList.add('active');
-                parent.querySelectorAll('.nav-link').forEach(nav => nav.classList.remove('active'));
-                link.classList.add('active');
+                if(parent) {
+                    parent.querySelectorAll('.content-panel').forEach(p => p.classList.remove('active'));
+                    const targetPanel = document.getElementById(`${panelId}Panel`);
+                    if(targetPanel) targetPanel.classList.add('active');
+                    parent.querySelectorAll('.nav-link').forEach(nav => nav.classList.remove('active'));
+                    link.classList.add('active');
+                }
                 if (window.innerWidth <= 768) document.querySelectorAll('.sidebar').forEach(s => s.classList.remove('open'));
             });
         });
     }
 
-    // Badges
     const BADGES = [
         { id: 'first_bet', name: '🏅 Premier pas', description: 'Faire son premier pronostic' },
         { id: 'streak_3', name: '🔥 En forme', description: '3 pronostics corrects consécutifs' },
@@ -1235,250 +1307,421 @@
     ];
 
     async function updateUserBadges(userId) {
-        const betsSnap = await db.ref(`pronostics/${userId}`).once('value');
-        const bets = betsSnap.val() || {};
-        let totalBets = 0, exactScores = 0, currentStreak = 0, maxStreak = 0;
-        for (let matchId in bets) {
-            const bet = bets[matchId];
-            if (bet.validated) {
-                totalBets++;
-                if (bet.pointsEarned > 0) {
-                    if (bet.pointsEarned >= 10) exactScores++;
-                    currentStreak++;
-                    maxStreak = Math.max(maxStreak, currentStreak);
-                } else currentStreak = 0;
+        try {
+            const betsSnap = await db.ref(`pronostics/${userId}`).once('value');
+            const bets = betsSnap.val() || {};
+            let totalBets = 0, exactScores = 0, currentStreak = 0, maxStreak = 0;
+            for (let matchId in bets) {
+                const bet = bets[matchId];
+                if (bet.validated) {
+                    totalBets++;
+                    if (bet.pointsEarned > 0) {
+                        if (bet.pointsEarned >= 10) exactScores++;
+                        currentStreak++;
+                        maxStreak = Math.max(maxStreak, currentStreak);
+                    } else currentStreak = 0;
+                }
             }
-        }
-        const usersSnap = await db.ref('users').once('value');
-        const users = usersSnap.val() || {};
-        let rank = 1;
-        const userPoints = users[userId]?.totalPoints || 0;
-        for (let uid in users) if (users[uid]?.totalPoints > userPoints) rank++;
-        const earnedBadges = [];
-        if (totalBets >= 1) earnedBadges.push('first_bet');
-        if (maxStreak >= 3) earnedBadges.push('streak_3');
-        if (maxStreak >= 5) earnedBadges.push('streak_5');
-        if (exactScores >= 3) earnedBadges.push('exact_3');
-        if (rank <= 3) earnedBadges.push('top_3');
-        await db.ref(`users/${userId}/badges`).set(earnedBadges);
-        return earnedBadges;
+            const usersSnap = await db.ref('users').once('value');
+            const users = usersSnap.val() || {};
+            let rank = 1;
+            const userPoints = users[userId]?.totalPoints || 0;
+            for (let uid in users) if (users[uid]?.totalPoints > userPoints && uid !== userId) rank++;
+            const earnedBadges = [];
+            if (totalBets >= 1) earnedBadges.push('first_bet');
+            if (maxStreak >= 3) earnedBadges.push('streak_3');
+            if (maxStreak >= 5) earnedBadges.push('streak_5');
+            if (exactScores >= 3) earnedBadges.push('exact_3');
+            if (rank <= 3) earnedBadges.push('top_3');
+            await db.ref(`users/${userId}/badges`).set(earnedBadges);
+            return earnedBadges;
+        } catch(e) { return []; }
     }
 
     async function displayBadges(userId, containerId) {
-        const userSnap = await db.ref(`users/${userId}`).once('value');
-        const user = userSnap.val();
-        const badges = user?.badges || [];
-        let html = '<div class="badge-container">';
-        for (const badge of BADGES) {
-            const earned = badges.includes(badge.id);
-            html += `<div class="badge ${!earned ? 'badge-locked' : ''}"><i class="fas ${earned ? 'fa-award' : 'fa-lock'}"></i> ${badge.name}<br><small>${badge.description}</small></div>`;
-        }
-        html += '</div>';
-        document.getElementById(containerId).innerHTML = html;
+        try {
+            const userSnap = await db.ref(`users/${userId}`).once('value');
+            const user = userSnap.val();
+            const badges = user?.badges || [];
+            let html = '<div class="badge-container">';
+            for (const badge of BADGES) {
+                const earned = badges.includes(badge.id);
+                html += `<div class="badge ${!earned ? 'badge-locked' : ''}"><i class="fas ${earned ? 'fa-award' : 'fa-lock'}"></i> ${badge.name}<br><small>${badge.description}</small></div>`;
+            }
+            html += '</div>';
+            const container = document.getElementById(containerId);
+            if(container) container.innerHTML = html;
+        } catch(e) {}
     }
 
     async function loadUserHistory(userId, containerId) {
-        const betsSnap = await db.ref(`pronostics/${userId}`).once('value');
-        const bets = betsSnap.val() || {};
-        if (Object.keys(bets).length === 0) { document.getElementById(containerId).innerHTML = '<p>Aucun pronostic</p>'; return; }
-        let html = '';
-        for (const [matchId, bet] of Object.entries(bets)) {
-            const matchSnap = await db.ref(`matches/${matchId}`).once('value');
-            const match = matchSnap.val();
-            if (match) {
-                html += `<div class="history-item"><strong>${match.homeTeam} vs ${match.awayTeam}</strong><br>Pronostic: ${bet.homeScore} - ${bet.awayScore}<br>Points: ${bet.pointsEarned || 0}<br><small>${new Date(bet.timestamp).toLocaleString()}</small></div>`;
-            }
-        }
-        document.getElementById(containerId).innerHTML = html;
-    }
-
-    // Classement complet avec tous les points
-    async function loadCompleteRanking(containerId) {
-        const usersSnap = await db.ref('users').once('value');
-        const users = usersSnap.val() || {};
-        const ranking = [];
-        let maxPoints = 0;
-        
-        for (const [uid, user] of Object.entries(users)) {
-            if (user.email !== 'wkwtunisia@gmail.com') {
-                const points = user.totalPoints || 0;
-                ranking.push({ 
-                    name: user.fullName || user.email, 
-                    department: user.department || 'N/A', 
-                    points: points,
-                    badges: (user.badges || []).length
-                });
-                if (points > maxPoints) maxPoints = points;
-            }
-        }
-        ranking.sort((a, b) => b.points - a.points);
-        
-        // Calcul des statistiques
-        const totalParticipants = ranking.length;
-        const totalPoints = ranking.reduce((sum, u) => sum + u.points, 0);
-        const averagePoints = totalParticipants > 0 ? (totalPoints / totalParticipants).toFixed(1) : 0;
-        
-        let html = `
-            <div class="ranking-stats">
-                <div class="stat-card"><div class="stat-value">${totalParticipants}</div><div class="stat-label">Participants</div></div>
-                <div class="stat-card"><div class="stat-value">${totalPoints}</div><div class="stat-label">Points total</div></div>
-                <div class="stat-card"><div class="stat-value">${averagePoints}</div><div class="stat-label">Moyenne</div></div>
-            </div>
-            <table class="ranking-full-table">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Joueur</th>
-                        <th>Département</th>
-                        <th>Points</th>
-                        <th>Progression</th>
-                        <th>Badges</th>
-                    </tr>
-                </thead>
-                <tbody>`;
-        
-        ranking.forEach((user, index) => {
-            let rowClass = '';
-            if (index === 0) rowClass = 'gold-row';
-            else if (index === 1) rowClass = 'silver-row';
-            else if (index === 2) rowClass = 'bronze-row';
-            
-            const progressPercent = maxPoints > 0 ? (user.points / maxPoints) * 100 : 0;
-            const medalIcon = index === 0 ? '🥇 ' : (index === 1 ? '🥈 ' : (index === 2 ? '🥉 ' : ''));
-            
-            html += `<tr class="${rowClass}">
-                <td><strong>${index + 1}</strong> ${medalIcon}</td>
-                <td><i class="fas fa-user-circle"></i> ${escapeHtml(user.name)}</td>
-                <td><i class="fas fa-building"></i> ${escapeHtml(user.department)}</td>
-                <td><span class="point-badge">${user.points} pts</span></td>
-                <td><div class="progress-bar-container"><div class="progress-bar" style="width: ${progressPercent}%"></div></div></td>
-                <td><i class="fas fa-medal"></i> ${user.badges}</td>
-            </tr>`;
-        });
-        
-        if (ranking.length === 0) {
-            html += '<tr><td colspan="6" style="text-align:center">Aucun participant pour le moment</td></tr>';
-        }
-        
-        html += `</tbody></table>`;
-        document.getElementById(containerId).innerHTML = html;
-    }
-
-    // Auth
-    auth.onAuthStateChanged(async (user) => {
-        if (user) {
-            document.getElementById('authContainer').style.display = 'none';
-            if (user.email === 'wkwtunisia@gmail.com') {
-                document.getElementById('adminDashboard').classList.remove('hidden');
-                document.getElementById('userDashboard').classList.add('hidden');
-                initSidebarNavigation();
-                loadCompleteRanking('usersRankingContainer');
-                loadAdminMatchesWithPredictions();
-                showTutorial();
-                showNotification('Bienvenue Admin', 'Connecté avec succès', 'success');
-            } else {
-                document.getElementById('userDashboard').classList.remove('hidden');
-                document.getElementById('adminDashboard').classList.add('hidden');
-                initSidebarNavigation();
-                document.getElementById('userNameSidebar').innerText = user.email;
-                document.getElementById('userEmailSidebar').innerText = user.email;
-                loadCompleteRanking('userRankingContainer');
-                loadUserHistory(user.uid, 'userHistoryContainer');
-                await updateUserBadges(user.uid);
-                displayBadges(user.uid, 'userBadgesContainer');
-                loadUserMatchesSeparated(user.uid);
-                showTutorial();
-                showNotification('Bienvenue !', 'Connecté avec succès', 'success');
-            }
-        } else {
-            document.getElementById('authContainer').style.display = 'flex';
-            document.getElementById('adminDashboard').classList.add('hidden');
-            document.getElementById('userDashboard').classList.add('hidden');
-            document.getElementById('loginForm').style.display = 'block';
-            document.getElementById('registerForm').style.display = 'none';
-        }
-    });
-
-    // Login/Register
-    document.getElementById('loginBtn').onclick = async () => {
         try {
-            await auth.signInWithEmailAndPassword(document.getElementById('loginEmail').value, document.getElementById('loginPassword').value);
-        } catch (err) { showMessage(document.getElementById('loginMessage'), err.message); }
-    };
-    document.getElementById('registerBtn').onclick = async () => {
-        const full = document.getElementById('regFullName').value;
-        const dept = document.getElementById('regDepartment').value;
-        const email = document.getElementById('regEmail').value;
-        const pwd = document.getElementById('regPassword').value;
-        if (!full || !email || pwd.length < 6) { showMessage(document.getElementById('registerMessage'), 'Champs invalides'); return; }
-        try {
-            const cred = await auth.createUserWithEmailAndPassword(email, pwd);
-            await db.ref(`users/${cred.user.uid}`).set({ fullName: full, department: dept, email: email, totalPoints: 0, badges: [] });
-            showMessage(document.getElementById('registerMessage'), 'Inscription réussie !', false);
-            setTimeout(() => { document.getElementById('registerForm').style.display = 'none'; document.getElementById('loginForm').style.display = 'block'; }, 1500);
-        } catch (err) { showMessage(document.getElementById('registerMessage'), err.message); }
-    };
-    document.getElementById('showRegister').onclick = () => { document.getElementById('loginForm').style.display = 'none'; document.getElementById('registerForm').style.display = 'block'; };
-    document.getElementById('showLogin').onclick = () => { document.getElementById('registerForm').style.display = 'none'; document.getElementById('loginForm').style.display = 'block'; };
-    document.getElementById('adminLogoutBtn').onclick = () => auth.signOut();
-    document.getElementById('userLogoutBtn').onclick = () => auth.signOut();
-
-    // Add Match
-    document.getElementById('addMatchBtn').onclick = async () => {
-        const home = document.getElementById('homeTeam').value.trim();
-        const away = document.getElementById('awayTeam').value.trim();
-        const date = document.getElementById('matchDate').value;
-        const winnerPoints = parseInt(document.getElementById('winnerPoints').value) || 5;
-        const exactScorePoints = parseInt(document.getElementById('exactScorePoints').value) || 10;
-        const isSpecial = document.getElementById('isSpecialMatch').checked;
-        if (!home || !away || !date) { showMessage(document.getElementById('adminMessage'), 'Complétez tous les champs'); return; }
-        await db.ref('matches').push({
-            homeTeam: home, awayTeam: away, datetime: date, finalHome: null, finalAway: null, closed: false,
-            winnerPoints: winnerPoints, exactScorePoints: exactScorePoints, isSpecial: isSpecial
-        });
-        document.getElementById('homeTeam').value = '';
-        document.getElementById('awayTeam').value = '';
-        document.getElementById('matchDate').value = '';
-        showMessage(document.getElementById('adminMessage'), 'Match ajouté !', false);
-        loadAdminMatchesWithPredictions();
-    };
-
-    async function loadAdminMatchesWithPredictions() {
-        const matchesSnap = await db.ref('matches').once('value');
-        const matches = matchesSnap.val();
-        if (!matches) { document.getElementById('adminMatchesContainer').innerHTML = '<p>Aucun match</p>'; return; }
-        let html = '';
-        for (const [matchId, match] of Object.entries(matches)) {
-            const betsSnap = await db.ref('pronostics').once('value');
-            const allBets = betsSnap.val() || {};
-            const matchBets = [];
-            for (const [userId, bets] of Object.entries(allBets)) {
-                if (bets[matchId]) {
-                    const userSnap = await db.ref(`users/${userId}`).once('value');
-                    matchBets.push({ userName: userSnap.val()?.fullName || userId.slice(0, 6), bet: bets[matchId] });
+            const betsSnap = await db.ref(`pronostics/${userId}`).once('value');
+            const bets = betsSnap.val() || {};
+            if (Object.keys(bets).length === 0) { 
+                const container = document.getElementById(containerId);
+                if(container) container.innerHTML = '<p>Aucun pronostic</p>'; 
+                return; 
+            }
+            let html = '';
+            for (const [matchId, bet] of Object.entries(bets)) {
+                const matchSnap = await db.ref(`matches/${matchId}`).once('value');
+                const match = matchSnap.val();
+                if (match) {
+                    html += `<div class="history-item"><strong>${match.homeTeam} vs ${match.awayTeam}</strong><br>Pronostic: ${bet.homeScore} - ${bet.awayScore}<br>Points: ${bet.pointsEarned || 0}<br><small>${new Date(bet.timestamp).toLocaleString()}</small></div>`;
                 }
             }
-            const displayHome = tempFinalResults[`${matchId}_home`] !== undefined ? tempFinalResults[`${matchId}_home`] : (match.finalHome ?? '');
-            const displayAway = tempFinalResults[`${matchId}_away`] !== undefined ? tempFinalResults[`${matchId}_away`] : (match.finalAway ?? '');
-            html += `<div class="match-admin-card"><div class="match-title">🏆 ${match.homeTeam} 🆚 ${match.awayTeam} <small>(${match.datetime})</small>${match.isSpecial ? '<span class="special-badge">🌟 Spécial x2</span>' : ''}${match.closed ? '<span class="completed-badge">Terminé</span>' : ''}</div>
-            <div class="points-config">🏆 Vainqueur = ${match.winnerPoints || 5} pts | 🎯 Score exact = ${match.exactScorePoints || 10} pts ${match.isSpecial ? '<strong>(x2)</strong>' : ''}</div>
-            <div class="final-result-section">
-                <div class="final-result">
-                    <input type="number" id="finalHome_${matchId}" value="${displayHome}" placeholder="0" onchange="tempFinalResults['${matchId}_home']=this.value">
-                    <span class="vs-badge">VS</span>
-                    <input type="number" id="finalAway_${matchId}" value="${displayAway}" placeholder="0" onchange="tempFinalResults['${matchId}_away']=this.value">
-                    <button class="btn-primary" style="padding:8px 16px;border-radius:12px;margin:4px;" onclick="validateMatchResult('${matchId}')">✅ Valider</button>
-                    <button class="btn-secondary" style="padding:8px 16px;border-radius:12px;margin:4px;" onclick="resetMatchPoints('${matchId}')">🔄 Reset</button>
-                </div>
-            </div>
-            <table style="width:100%; margin-top:15px;"><thead><tr><th>Utilisateur</th><th>Pronostic</th><th>Points</th></tr></thead><tbody>`;
-            for (const betItem of matchBets) {
-                html += `<tr><td><i class="fas fa-user"></i> ${escapeHtml(betItem.userName)}</td><td><strong>${betItem.bet.homeScore} - ${betItem.bet.awayScore}</strong></td><td><span class="point-badge">${betItem.bet.pointsEarned || 0} pts</span></td></tr>`;
+            const container = document.getElementById(containerId);
+            if(container) container.innerHTML = html;
+        } catch(e) {}
+    }
+
+    async function loadCompleteRanking(containerId) {
+        try {
+            const usersSnap = await db.ref('users').once('value');
+            const users = usersSnap.val() || {};
+            const ranking = [];
+            let maxPoints = 0;
+            for (const [uid, user] of Object.entries(users)) {
+                if (user.email !== 'wkwtunisia@gmail.com') {
+                    const points = user.totalPoints || 0;
+                    ranking.push({ 
+                        name: user.fullName || user.email, 
+                        department: user.department || 'N/A', 
+                        points: points,
+                        badges: (user.badges || []).length
+                    });
+                    if (points > maxPoints) maxPoints = points;
+                }
             }
-            if (matchBets.length === 0) html += '<tr><td colspan="3">Aucun pronostic</td></tr>';
-            html += `</tbody></table></div>`;
+            ranking.sort((a, b) => b.points - a.points);
+            const totalParticipants = ranking.length;
+            const totalPoints = ranking.reduce((sum, u) => sum + u.points, 0);
+            const averagePoints = totalParticipants > 0 ? (totalPoints / totalParticipants).toFixed(1) : 0;
+            
+            let html = `
+                <div class="ranking-stats">
+                    <div class="stat-card"><div class="stat-value">${totalParticipants}</div><div class="stat-label">Participants</div></div>
+                    <div class="stat-card"><div class="stat-value">${totalPoints}</div><div class="stat-label">Points total</div></div>
+                    <div class="stat-card"><div class="stat-value">${averagePoints}</div><div class="stat-label">Moyenne</div></div>
+                </div>
+                <table class="ranking-full-table">
+                    <thead>
+                        <tr><th>#</th><th>Joueur</th><th>Département</th><th>Points</th><th>Progression</th><th>Badges</th></tr>
+                    </thead>
+                    <tbody>`;
+            
+            ranking.forEach((user, index) => {
+                let rowClass = '';
+                if (index === 0) rowClass = 'gold-row';
+                else if (index === 1) rowClass = 'silver-row';
+                else if (index === 2) rowClass = 'bronze-row';
+                const progressPercent = maxPoints > 0 ? (user.points / maxPoints) * 100 : 0;
+                const medalIcon = index === 0 ? '🥇 ' : (index === 1 ? '🥈 ' : (index === 2 ? '🥉 ' : ''));
+                html += `<tr class="${rowClass}">
+                    <td><strong>${index + 1}</strong> ${medalIcon}</td>
+                    <td><i class="fas fa-user-circle"></i> ${escapeHtml(user.name)}</td>
+                    <td><i class="fas fa-building"></i> ${escapeHtml(user.department)}</td>
+                    <td><span class="point-badge">${user.points} pts</span></td>
+                    <td><div class="progress-bar-container"><div class="progress-bar" style="width: ${progressPercent}%"></div></div></td>
+                    <td><i class="fas fa-medal"></i> ${user.badges}</td>
+                </tr>`;
+            });
+            if (ranking.length === 0) html += '<tr><td colspan="6" style="text-align:center">Aucun participant pour le moment</td></tr>';
+            html += `</tbody></table>`;
+            const container = document.getElementById(containerId);
+            if(container) container.innerHTML = html;
+        } catch(e) { console.warn(e); }
+    }
+
+    // World Cup Winner Functions
+    async function checkAndAwardWorldCupPoints() {
+        try {
+            const settingsSnap = await db.ref('settings/worldCupWinner').once('value');
+            const settings = settingsSnap.val();
+            if(!settings || !settings.winnerTeam || settings.pointsAwarded) return;
+            const winnerTeam = settings.winnerTeam;
+            const usersSnap = await db.ref('users').once('value');
+            const users = usersSnap.val() || {};
+            const betsSnap = await db.ref('worldCupBets').once('value');
+            const bets = betsSnap.val() || {};
+            for(let [userId, bet] of Object.entries(bets)) {
+                if(bet.team === winnerTeam && users[userId] && !bet.pointsAwarded) {
+                    const currentPoints = users[userId].totalPoints || 0;
+                    await db.ref(`users/${userId}/totalPoints`).set(currentPoints + 15);
+                    await db.ref(`worldCupBets/${userId}/pointsAwarded`).set(true);
+                    await db.ref(`worldCupBets/${userId}/pointsEarned`).set(15);
+                    showNotification('🏆 Bonus Vainqueur CDM', `${users[userId].fullName} a gagné 15 points !`, 'success');
+                }
+            }
+            await db.ref('settings/worldCupWinner/pointsAwarded').set(true);
+            startConfetti();
+            await loadAllWorldCupBets();
+        } catch(e) { console.warn(e); }
+    }
+
+    function isWorldCupBettingClosed() {
+        const finalDate = new Date('2026-07-19T20:00:00');
+        return new Date() > finalDate;
+    }
+
+    function startWorldCupCountdown() {
+        const finalDate = new Date('2026-07-19T20:00:00');
+        const updateCountdown = () => {
+            const now = new Date();
+            if(now > finalDate) {
+                const countdownDiv = document.getElementById('wcCountdown');
+                if(countdownDiv) countdownDiv.innerHTML = '<div class="closed-badge"><i class="fas fa-lock"></i> Paris fermés - La compétition est terminée</div>';
+                return;
+            }
+            const diff = finalDate - now;
+            const days = Math.floor(diff / (1000*60*60*24));
+            const hours = Math.floor((diff % (86400000))/3600000);
+            const minutes = Math.floor((diff % 3600000)/60000);
+            const countdownDiv = document.getElementById('wcCountdown');
+            if(countdownDiv) countdownDiv.innerHTML = `<div class="countdown-timer"><i class="fas fa-hourglass-half"></i> ⏰ Plus que ${days}j ${hours}h ${minutes}m pour parier sur le vainqueur !</div>`;
+        };
+        updateCountdown();
+        setInterval(updateCountdown, 60000);
+    }
+
+    async function loadWorldCupBetForUser(userId) {
+        try {
+            const betSnap = await db.ref(`worldCupBets/${userId}`).once('value');
+            const bet = betSnap.val();
+            const settingsSnap = await db.ref('settings/worldCupWinner').once('value');
+            const settings = settingsSnap.val();
+            const displayDiv = document.getElementById('userWinnerBetDisplay');
+            const select = document.getElementById('worldCupWinnerSelect');
+            const saveBtn = document.getElementById('saveWorldCupBetBtn');
+            if(!displayDiv) return;
+            
+            if(isWorldCupBettingClosed()) {
+                if(select) select.disabled = true;
+                if(saveBtn) { saveBtn.disabled = true; saveBtn.style.opacity = '0.6'; }
+                if(bet) displayDiv.innerHTML = `<i class="fas fa-check-circle"></i> Votre pronostic: <strong>${bet.team}</strong> ${bet.pointsEarned ? `✅ +${bet.pointsEarned} pts` : ''}`;
+                else displayDiv.innerHTML = `<i class="fas fa-times-circle"></i> Vous n'avez pas parié - Paris fermés`;
+                return;
+            }
+            
+            if(bet && !settings?.pointsAwarded) {
+                if(select) select.disabled = true;
+                if(saveBtn) { saveBtn.disabled = true; saveBtn.style.opacity = '0.6'; }
+                displayDiv.innerHTML = `<i class="fas fa-lock"></i> Votre pronostic: <strong>${bet.team}</strong> - En attente du résultat final`;
+            } else if(!bet) {
+                if(select) select.disabled = false;
+                if(saveBtn) { saveBtn.disabled = false; saveBtn.style.opacity = '1'; }
+                displayDiv.innerHTML = '';
+            }
+        } catch(e) { console.warn(e); }
+    }
+
+    async function loadAllWorldCupBets() {
+        try {
+            const usersSnap = await db.ref('users').once('value');
+            const users = usersSnap.val() || {};
+            const betsSnap = await db.ref('worldCupBets').once('value');
+            const bets = betsSnap.val() || {};
+            const settingsSnap = await db.ref('settings/worldCupWinner').once('value');
+            const settings = settingsSnap.val();
+            const winnerTeam = settings?.winnerTeam || null;
+            const pointsAwarded = settings?.pointsAwarded || false;
+            
+            let allBets = [];
+            for(let [userId, bet] of Object.entries(bets)) {
+                if(users[userId] && users[userId].email !== 'wkwtunisia@gmail.com') {
+                    allBets.push({
+                        userName: users[userId].fullName || userId.substring(0,8),
+                        department: users[userId].department || 'N/A',
+                        team: bet.team,
+                        timestamp: bet.timestamp,
+                        pointsEarned: bet.pointsEarned || 0,
+                        pointsAwarded: bet.pointsAwarded || false,
+                        isWinner: winnerTeam && bet.team === winnerTeam
+                    });
+                }
+            }
+            
+            allBets.sort((a, b) => b.timestamp - a.timestamp);
+            
+            let html = `<table class="wc-bets-table">
+                <thead>
+                    <tr><th>👤 Utilisateur</th><th>🏢 Département</th><th>🏆 Pronostic</th><th>📅 Date</th><th>⭐ Points</th><th>🏅 Statut</th></tr>
+                </thead>
+                <tbody>`;
+            
+            if(allBets.length === 0) {
+                html += `<tr><td colspan="6" style="text-align:center;">Aucun pronostic enregistré</td></tr>`;
+            } else {
+                allBets.forEach(bet => {
+                    const dateStr = new Date(bet.timestamp).toLocaleString();
+                    let status = '';
+                    let statusClass = '';
+                    if(pointsAwarded) {
+                        if(bet.isWinner) {
+                            status = '✅ Gagnant +15pts';
+                            statusClass = 'style="color:#10b981; font-weight:bold;"';
+                        } else if(bet.pointsAwarded) {
+                            status = '💰 Points attribués';
+                            statusClass = 'style="color:#f59e0b;"';
+                        } else {
+                            status = '❌ Perdant';
+                            statusClass = 'style="color:#ef4444;"';
+                        }
+                    } else if(winnerTeam) {
+                        status = bet.isWinner ? '🏆 Vainqueur (en attente)' : '❌ Perdant';
+                        statusClass = bet.isWinner ? 'style="color:#FFD700; font-weight:bold;"' : 'style="color:#ef4444;"';
+                    } else {
+                        status = '⏳ En attente du résultat';
+                        statusClass = 'style="color:#64748b;"';
+                    }
+                    
+                    html += `<tr>
+                        <td><i class="fas fa-user-circle"></i> ${escapeHtml(bet.userName)}</td>
+                        <td>${escapeHtml(bet.department)}</td>
+                        <td><strong>🏆 ${escapeHtml(bet.team)}</strong></td>
+                        <td>${dateStr}</td>
+                        <td class="point-badge" style="background:#fef3c7; padding:4px 8px; border-radius:12px; text-align:center;">${bet.pointsEarned} pts</td>
+                        <td ${statusClass}>${status}</td>
+                    </tr>`;
+                });
+            }
+            
+            html += `</tbody></table>`;
+            
+            const totalBets = allBets.length;
+            const winnerBets = allBets.filter(b => b.isWinner).length;
+            html = `<div style="margin-bottom:15px; padding:10px; background:linear-gradient(135deg,#fef9e7,#fef3c7); border-radius:16px;">
+                        <strong><i class="fas fa-chart-pie"></i> Résumé :</strong> ${totalBets} participants • ${winnerBets} ont parié sur ${winnerTeam || 'le vainqueur'} 
+                        ${winnerTeam ? `<span class="special-badge">🏆 ${winnerTeam}</span>` : ''}
+                    </div>` + html;
+            
+            const container = document.getElementById('allWorldCupBetsContainer');
+            if(container) container.innerHTML = html;
+        } catch(e) { console.warn(e); }
+    }
+
+    window.saveWorldCupBet = async function() {
+        const user = auth.currentUser;
+        if(!user) { showNotification('Erreur', 'Connectez-vous d\'abord', 'error'); return; }
+        if(isWorldCupBettingClosed()) {
+            showNotification('Impossible', 'Les paris sur le vainqueur sont fermés', 'error');
+            return;
         }
-        document.getElementById('adminMatchesContainer').innerHTML = html;
+        const selectedTeam = document.getElementById('worldCupWinnerSelect').value;
+        if(!selectedTeam) { showNotification('Erreur', 'Sélectionnez une équipe', 'error'); return; }
+        try {
+            const existingSnap = await db.ref(`worldCupBets/${user.uid}`).once('value');
+            if(existingSnap.exists()) { showNotification('Erreur', 'Vous avez déjà parié !', 'error'); return; }
+            await db.ref(`worldCupBets/${user.uid}`).set({ team: selectedTeam, timestamp: Date.now(), pointsEarned: 0 });
+            showNotification('Pronostic enregistré !', `${selectedTeam} - 15 points si vainqueur`, 'success');
+            await loadWorldCupBetForUser(user.uid);
+            startConfetti();
+        } catch(e) { showNotification('Erreur', e.message, 'error'); }
+    };
+
+    window.setWorldCupWinner = async function() {
+        const winnerTeam = document.getElementById('adminWinnerTeam').value;
+        if(!winnerTeam) { showNotification('Erreur', 'Sélectionnez une équipe', 'error'); return; }
+        try {
+            const settingsSnap = await db.ref('settings/worldCupWinner').once('value');
+            const settings = settingsSnap.val();
+            if(settings?.pointsAwarded) { showNotification('Erreur', 'Les points ont déjà été attribués', 'error'); return; }
+            await db.ref('settings/worldCupWinner').set({ winnerTeam: winnerTeam, pointsAwarded: false });
+            document.getElementById('winnerMessage').innerHTML = `<div style="color:green;">✅ Vainqueur défini: ${winnerTeam}. Les points seront attribués automatiquement.</div>`;
+            showNotification('Vainqueur défini', winnerTeam, 'success');
+            await checkAndAwardWorldCupPoints();
+            await loadCompleteRanking('usersRankingContainer');
+            await loadCompleteRanking('userRankingContainer');
+            await loadAllWorldCupBets();
+            await updatePodium();
+        } catch(e) { showNotification('Erreur', e.message, 'error'); }
+    };
+
+    function populateTeamSelects() {
+        const selectors = ['worldCupWinnerSelect', 'adminWinnerTeam'];
+        selectors.forEach(selectorId => {
+            const select = document.getElementById(selectorId);
+            if(select) {
+                select.innerHTML = '<option value="">-- Sélectionnez une équipe --</option>' + 
+                    nationalTeams.map(team => `<option value="${team}">${team}</option>`).join('');
+            }
+        });
+    }
+
+    async function loadAdminMatchesWithPredictions() {
+        try {
+            const matchesSnap = await db.ref('matches').once('value');
+            const matches = matchesSnap.val();
+            const usersSnap = await db.ref('users').once('value');
+            const users = usersSnap.val() || {};
+            const allPronosticsSnap = await db.ref('pronostics').once('value');
+            const allPronostics = allPronosticsSnap.val() || {};
+            
+            if (!matches) { 
+                const container = document.getElementById('adminMatchesContainer');
+                if(container) container.innerHTML = '<p>Aucun match</p>'; 
+                return; 
+            }
+            let html = '';
+            for (const [matchId, match] of Object.entries(matches)) {
+                const matchPronostics = [];
+                for(let [userId, userPronos] of Object.entries(allPronostics)) {
+                    if(userPronos && userPronos[matchId]) {
+                        const userName = users[userId]?.fullName || userId.substring(0,8);
+                        const department = users[userId]?.department || 'N/A';
+                        matchPronostics.push({
+                            userName: userName,
+                            department: department,
+                            bet: userPronos[matchId]
+                        });
+                    }
+                }
+                
+                const displayHome = tempFinalResults[`${matchId}_home`] !== undefined ? tempFinalResults[`${matchId}_home`] : (match.finalHome ?? '');
+                const displayAway = tempFinalResults[`${matchId}_away`] !== undefined ? tempFinalResults[`${matchId}_away`] : (match.finalAway ?? '');
+                
+                html += `<div class="match-admin-card">
+                    <div class="match-teams">🏆 ${match.homeTeam} 🆚 ${match.awayTeam} ${match.isSpecial ? '<span class="special-badge">🌟 Spécial x2</span>' : ''}${match.closed ? '<span class="completed-badge">Terminé</span>' : ''}</div>
+                    <div class="match-date">📅 ${match.datetime}</div>
+                    <div class="points-config">🏆 Vainqueur = ${match.winnerPoints || 5} pts | 🎯 Score exact = ${match.exactScorePoints || 10} pts ${match.isSpecial ? '<strong>(x2)</strong>' : ''}</div>
+                    <div class="final-result-section">
+                        <div class="final-result">
+                            <input type="number" id="finalHome_${matchId}" value="${displayHome}" placeholder="0" onchange="tempFinalResults['${matchId}_home']=this.value">
+                            <span class="vs-badge">VS</span>
+                            <input type="number" id="finalAway_${matchId}" value="${displayAway}" placeholder="0" onchange="tempFinalResults['${matchId}_away']=this.value">
+                            <button class="btn-primary" style="padding:8px 16px;border-radius:12px;margin:4px;" onclick="validateMatchResult('${matchId}')">✅ Valider</button>
+                            <button class="btn-secondary" style="padding:8px 16px;border-radius:12px;margin:4px;" onclick="resetMatchPoints('${matchId}')">🔄 Reset</button>
+                        </div>
+                    </div>
+                    <div style="margin-top:15px;">
+                        <strong><i class="fas fa-users"></i> Pronostics des utilisateurs (${matchPronostics.length}) :</strong>
+                        <table class="bets-table">
+                            <thead>
+                                <tr><th>👤 Utilisateur</th><th>🏢 Département</th><th>📊 Pronostic</th><th>⭐ Points</th><th>✅ Validé</th></tr>
+                            </thead>
+                            <tbody>`;
+                
+                if(matchPronostics.length === 0) {
+                    html += `<tr><td colspan="5" style="text-align:center;">Aucun pronostic pour ce match</td></tr>`;
+                } else {
+                    matchPronostics.forEach(p => {
+                        const pointsEarned = p.bet.pointsEarned || 0;
+                        const validated = p.bet.validated ? '✅ Oui' : '⏳ Non';
+                        html += `<tr>
+                            <td><i class="fas fa-user-circle"></i> ${escapeHtml(p.userName)}</td>
+                            <td>${escapeHtml(p.department)}</td>
+                            <td><strong>${p.bet.homeScore} - ${p.bet.awayScore}</strong></td>
+                            <td style="background:#fef3c7; padding:4px 8px; border-radius:12px;">${pointsEarned} pts</td>
+                            <td>${validated}</td>
+                        </tr>`;
+                    });
+                }
+                html += `</tbody></table></div></div>`;
+            }
+            const container = document.getElementById('adminMatchesContainer');
+            if(container) container.innerHTML = html;
+        } catch(e) { console.warn(e); }
     }
 
     window.validateMatchResult = async (matchId) => {
@@ -1495,7 +1738,7 @@
         const updates = {};
         const affectedUsers = new Set();
         for (const [userId, bets] of Object.entries(allBets)) {
-            if (bets[matchId]) {
+            if (bets && bets[matchId]) {
                 const bet = bets[matchId];
                 let points = 0;
                 const exactScore = (bet.homeScore === finalHome && bet.awayScore === finalAway);
@@ -1518,9 +1761,9 @@
             await updateUserBadges(userId);
         }
         showNotification('Résultat validé', `${finalHome}-${finalAway} - Points attribués !`, 'success');
-        loadCompleteRanking('usersRankingContainer');
-        loadCompleteRanking('userRankingContainer');
-        loadAdminMatchesWithPredictions();
+        await loadCompleteRanking('usersRankingContainer');
+        await loadCompleteRanking('userRankingContainer');
+        await loadAdminMatchesWithPredictions();
         startConfetti();
     };
 
@@ -1531,7 +1774,7 @@
         const updates = {};
         const affectedUsers = new Set();
         for (const [userId, bets] of Object.entries(allBets)) {
-            if (bets[matchId]) {
+            if (bets && bets[matchId]) {
                 updates[`pronostics/${userId}/${matchId}/pointsEarned`] = 0;
                 updates[`pronostics/${userId}/${matchId}/validated`] = false;
                 affectedUsers.add(userId);
@@ -1548,23 +1791,25 @@
         delete tempFinalResults[`${matchId}_home`];
         delete tempFinalResults[`${matchId}_away`];
         showNotification('Reset effectué', 'Les points ont été remis à zéro', 'warning');
-        loadCompleteRanking('usersRankingContainer');
-        loadCompleteRanking('userRankingContainer');
-        loadAdminMatchesWithPredictions();
+        await loadCompleteRanking('usersRankingContainer');
+        await loadCompleteRanking('userRankingContainer');
+        await loadAdminMatchesWithPredictions();
     };
 
     async function recalcUserTotalPoints(userId) {
-        const userBetsSnap = await db.ref(`pronostics/${userId}`).once('value');
-        const bets = userBetsSnap.val() || {};
-        let total = 0;
-        for (let matchId in bets) if (bets[matchId].pointsEarned) total += bets[matchId].pointsEarned;
-        await db.ref(`users/${userId}/totalPoints`).set(total);
+        try {
+            const userBetsSnap = await db.ref(`pronostics/${userId}`).once('value');
+            const bets = userBetsSnap.val() || {};
+            let total = 0;
+            for (let matchId in bets) if (bets[matchId].pointsEarned) total += bets[matchId].pointsEarned;
+            const wcBet = (await db.ref(`worldCupBets/${userId}`).once('value')).val();
+            if(wcBet?.pointsEarned) total += wcBet.pointsEarned;
+            await db.ref(`users/${userId}/totalPoints`).set(total);
+        } catch(e) {}
     }
 
-    // Mise à jour du compte à rebours pour un match
     function startMatchCountdown(matchId, matchDateTime, elementId) {
         if (countdownIntervals[matchId]) clearInterval(countdownIntervals[matchId]);
-        
         const updateCountdown = () => {
             const remaining = getTimeRemaining(matchDateTime);
             const countdownElement = document.getElementById(elementId);
@@ -1578,75 +1823,72 @@
                 }
             }
         };
-        
         updateCountdown();
         countdownIntervals[matchId] = setInterval(updateCountdown, 1000);
     }
 
     async function loadUserMatchesSeparated(userId) {
-        const matchesSnap = await db.ref('matches').once('value');
-        const matches = matchesSnap.val();
-        if (!matches) {
-            document.getElementById('userMatchesActiveList').innerHTML = '<div style="text-align:center">Aucun match</div>';
-            document.getElementById('userMatchesCompletedList').innerHTML = '<div style="text-align:center">Aucun match terminé</div>';
-            return;
-        }
-        const userBetsSnap = await db.ref(`pronostics/${userId}`).once('value');
-        const userBets = userBetsSnap.val() || {};
-        let activeHtml = '<div class="matches-grid">';
-        let completedHtml = '<div class="matches-grid">';
-        
-        for (const [matchId, match] of Object.entries(matches)) {
-            const existing = userBets[matchId];
-            const isClosed = match.closed === true;
-            const multiplier = match.isSpecial ? 2 : 1;
-            const bettingClosed = !isClosed && isMatchClosedForBetting(match.datetime);
-            const timeRemaining = getTimeRemaining(match.datetime);
-            
-            const cardHtml = `<div class="match-card">
-                <div class="match-teams">🏆 ${match.homeTeam} 🆚 ${match.awayTeam} 🏆${match.isSpecial ? '<span class="special-badge">🌟 Match décisif x2</span>' : ''}</div>
-                <div class="match-date"><i class="far fa-calendar"></i> ${match.datetime}${match.finalHome !== null ? ` (Résultat: ${match.finalHome}-${match.finalAway})` : ''}</div>
-                <div class="points-config" style="text-align:center;">🏆 Vainqueur=${(match.winnerPoints || 5) * multiplier} pts | 🎯 Score exact=${(match.exactScorePoints || 10) * multiplier} pts</div>
-                <div id="countdown_${matchId}"></div>`;
-            
-            let content = '';
-            if (!isClosed && !existing && !bettingClosed) {
-                content = `<div class="score-inputs"><div class="score-input"><label>${match.homeTeam}</label><input type="number" id="home_${matchId}" placeholder="0" min="0"></div>
-                <div class="score-input"><label>${match.awayTeam}</label><input type="number" id="away_${matchId}" placeholder="0" min="0"></div></div>
-                <button class="btn btn-primary" onclick="saveBetWithCheck('${matchId}', '${userId}', '${match.datetime}')"><i class="fas fa-save"></i> Enregistrer mon pronostic</button>`;
-                startMatchCountdown(matchId, match.datetime, `countdown_${matchId}`);
-                activeHtml += cardHtml + content + `</div>`;
-            } 
-            else if (!isClosed && !existing && bettingClosed) {
-                content = `<div class="bet-info" style="background:#fef3c7;"><i class="fas fa-lock"></i> 🔒 Parrainage fermé - Match dans moins de 30 minutes</div>`;
-                startMatchCountdown(matchId, match.datetime, `countdown_${matchId}`);
-                activeHtml += cardHtml + content + `</div>`;
+        try {
+            const matchesSnap = await db.ref('matches').once('value');
+            const matches = matchesSnap.val();
+            if (!matches) {
+                const activeContainer = document.getElementById('userMatchesActiveList');
+                const completedContainer = document.getElementById('userMatchesCompletedList');
+                if(activeContainer) activeContainer.innerHTML = '<div style="text-align:center">Aucun match</div>';
+                if(completedContainer) completedContainer.innerHTML = '<div style="text-align:center">Aucun match terminé</div>';
+                return;
             }
-            else if (existing) {
-                content = `<div class="bet-info"><i class="fas fa-check-circle"></i> Votre pronostic: <strong>${existing.homeScore} - ${existing.awayScore}</strong></div>`;
-                if (isClosed && existing.validated) content += `<div class="points-earned"><i class="fas fa-star"></i> Points gagnés: ${existing.pointsEarned || 0} pts</div>`;
-                else if (!isClosed) content += `<div class="bet-info"><i class="fas fa-lock"></i> Pronostic verrouillé - Modification impossible</div>`;
-                if (isClosed) {
-                    completedHtml += cardHtml + content + `</div>`;
-                } else {
+            const userBetsSnap = await db.ref(`pronostics/${userId}`).once('value');
+            const userBets = userBetsSnap.val() || {};
+            let activeHtml = '<div class="matches-grid">';
+            let completedHtml = '<div class="matches-grid">';
+            
+            for (const [matchId, match] of Object.entries(matches)) {
+                const existing = userBets[matchId];
+                const isClosed = match.closed === true;
+                const multiplier = match.isSpecial ? 2 : 1;
+                const bettingClosed = !isClosed && isMatchClosedForBetting(match.datetime);
+                
+                const cardHtml = `<div class="match-card">
+                    <div class="match-teams">🏆 ${match.homeTeam} 🆚 ${match.awayTeam} 🏆${match.isSpecial ? '<span class="special-badge">🌟 Match décisif x2</span>' : ''}</div>
+                    <div class="match-date"><i class="far fa-calendar"></i> ${match.datetime}${match.finalHome !== null ? ` (Résultat: ${match.finalHome}-${match.finalAway})` : ''}</div>
+                    <div class="points-config" style="text-align:center;">🏆 Vainqueur=${(match.winnerPoints || 5) * multiplier} pts | 🎯 Score exact=${(match.exactScorePoints || 10) * multiplier} pts</div>
+                    <div id="countdown_${matchId}"></div>`;
+                
+                if (!isClosed && !existing && !bettingClosed) {
+                    activeHtml += cardHtml + `<div class="score-inputs"><div class="score-input"><label>${match.homeTeam}</label><input type="number" id="home_${matchId}" placeholder="0" min="0"></div>
+                    <div class="score-input"><label>${match.awayTeam}</label><input type="number" id="away_${matchId}" placeholder="0" min="0"></div></div>
+                    <button class="btn btn-primary" onclick="saveBetWithCheck('${matchId}', '${userId}', '${match.datetime}')"><i class="fas fa-save"></i> Enregistrer mon pronostic</button>`;
                     startMatchCountdown(matchId, match.datetime, `countdown_${matchId}`);
-                    activeHtml += cardHtml + content + `</div>`;
+                    activeHtml += `</div>`;
+                } 
+                else if (!isClosed && !existing && bettingClosed) {
+                    activeHtml += cardHtml + `<div class="bet-info" style="background:#fef3c7;"><i class="fas fa-lock"></i> 🔒 Paris fermés - Match dans moins de 30 minutes</div></div>`;
+                    startMatchCountdown(matchId, match.datetime, `countdown_${matchId}`);
                 }
-            } 
-            else if (isClosed) {
-                content = `<div class="bet-info"><i class="fas fa-times-circle"></i> Match terminé - Vous n'avez pas pronostiqué</div>`;
-                completedHtml += cardHtml + content + `</div>`;
+                else if (existing) {
+                    activeHtml += cardHtml + `<div class="bet-info"><i class="fas fa-check-circle"></i> Votre pronostic: <strong>${existing.homeScore} - ${existing.awayScore}</strong></div>
+                    ${!isClosed ? `<div class="bet-info"><i class="fas fa-lock"></i> Pronostic verrouillé - Modification impossible</div>` : ''}
+                    ${isClosed && existing.validated ? `<div class="points-earned"><i class="fas fa-star"></i> Points gagnés: ${existing.pointsEarned || 0} pts</div>` : ''}`;
+                    if (isClosed) {
+                        completedHtml += cardHtml + `</div>`;
+                    } else {
+                        startMatchCountdown(matchId, match.datetime, `countdown_${matchId}`);
+                        activeHtml += `</div>`;
+                    }
+                } 
+                else if (isClosed) {
+                    completedHtml += cardHtml + `<div class="bet-info"><i class="fas fa-times-circle"></i> Match terminé - Vous n'avez pas pronostiqué</div></div>`;
+                }
             }
-        }
-        
-        activeHtml += `</div>`;
-        completedHtml += `</div>`;
-        
-        if (activeHtml === '<div class="matches-grid"></div>') activeHtml = '<div style="text-align:center; padding:40px;">Aucun match à pronostiquer pour le moment</div>';
-        if (completedHtml === '<div class="matches-grid"></div>') completedHtml = '<div style="text-align:center; padding:40px;">Aucun match terminé</div>';
-        
-        document.getElementById('userMatchesActiveList').innerHTML = activeHtml;
-        document.getElementById('userMatchesCompletedList').innerHTML = completedHtml;
+            activeHtml += `</div>`;
+            completedHtml += `</div>`;
+            
+            const activeContainer = document.getElementById('userMatchesActiveList');
+            const completedContainer = document.getElementById('userMatchesCompletedList');
+            if(activeContainer) activeContainer.innerHTML = activeHtml;
+            if(completedContainer) completedContainer.innerHTML = completedHtml;
+        } catch(e) { console.warn(e); }
     }
 
     window.saveBetWithCheck = async (matchId, userId, matchDateTime) => {
@@ -1654,47 +1896,150 @@
             showNotification('Action impossible', 'Les paris sont fermés 30 minutes avant le match !', 'error');
             return;
         }
-        
         const homeScore = parseInt(document.getElementById(`home_${matchId}`).value);
         const awayScore = parseInt(document.getElementById(`away_${matchId}`).value);
         if (isNaN(homeScore) || isNaN(awayScore)) { alert('Entrez des scores valides'); return; }
-        
         const existingBet = await db.ref(`pronostics/${userId}/${matchId}`).once('value');
         if (existingBet.exists()) { alert('Pronostic déjà enregistré !'); return; }
-        
         const matchSnap = await db.ref(`matches/${matchId}`).once('value');
         if (matchSnap.val()?.closed) { alert('Match terminé'); return; }
-        
-        await db.ref(`pronostics/${userId}/${matchId}`).set({ 
-            homeScore, awayScore, timestamp: Date.now(), pointsEarned: 0, validated: false 
-        });
-        
+        await db.ref(`pronostics/${userId}/${matchId}`).set({ homeScore, awayScore, timestamp: Date.now(), pointsEarned: 0, validated: false });
         showNotification('Pronostic enregistré !', `${homeScore} - ${awayScore}`, 'success');
-        loadUserMatchesSeparated(userId);
-        loadUserHistory(userId, 'userHistoryContainer');
+        await loadUserMatchesSeparated(userId);
+        await loadUserHistory(userId, 'userHistoryContainer');
         await updateUserBadges(userId);
-        displayBadges(userId, 'userBadgesContainer');
+        await displayBadges(userId, 'userBadgesContainer');
         startConfetti();
     };
 
-    document.getElementById('exportExcelBtn')?.addEventListener('click', async () => {
-        const usersSnap = await db.ref('users').once('value');
-        const users = usersSnap.val() || {};
-        const data = [['Rang', 'Nom complet', 'Département', 'Points totaux', 'Badges']];
-        const ranking = [];
-        for (const [userId, user] of Object.entries(users)) {
-            if (user.email !== 'wkwtunisia@gmail.com') ranking.push({ name: user.fullName || user.email, department: user.department || 'N/A', points: user.totalPoints || 0, badges: (user.badges || []).length });
+    function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])); }
+
+    // Auth and main flow
+    auth.onAuthStateChanged(async (user) => {
+        const authContainer = document.getElementById('authContainer');
+        const adminDashboard = document.getElementById('adminDashboard');
+        const userDashboard = document.getElementById('userDashboard');
+        if (user) {
+            authContainer.style.display = 'none';
+            if (user.email === 'wkwtunisia@gmail.com') {
+                adminDashboard.classList.remove('hidden');
+                userDashboard.classList.add('hidden');
+                initSidebarNavigation();
+                await loadCompleteRanking('usersRankingContainer');
+                await loadAdminMatchesWithPredictions();
+                await loadAllWorldCupBets();
+                populateTeamSelects();
+                showNotification('Bienvenue Admin', 'Connecté avec succès', 'success');
+            } else {
+                userDashboard.classList.remove('hidden');
+                adminDashboard.classList.add('hidden');
+                initSidebarNavigation();
+                document.getElementById('userNameSidebar').innerText = user.email;
+                document.getElementById('userEmailSidebar').innerText = user.email;
+                await loadCompleteRanking('userRankingContainer');
+                await loadUserHistory(user.uid, 'userHistoryContainer');
+                await updateUserBadges(user.uid);
+                await displayBadges(user.uid, 'userBadgesContainer');
+                await loadUserMatchesSeparated(user.uid);
+                await loadWorldCupBetForUser(user.uid);
+                await updatePodium();
+                startWorldCupCountdown();
+                await checkAndAwardWorldCupPoints();
+                populateTeamSelects();
+                showTutorial();
+                showNotification('Bienvenue !', 'Connecté avec succès', 'success');
+            }
+        } else {
+            authContainer.style.display = 'flex';
+            adminDashboard.classList.add('hidden');
+            userDashboard.classList.add('hidden');
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('registerForm').style.display = 'none';
         }
-        ranking.sort((a, b) => b.points - a.points);
-        ranking.forEach((user, index) => data.push([index + 1, user.name, user.department, user.points, user.badges]));
-        const ws = XLSX.utils.aoa_to_sheet(data);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'Classement_Complet');
-        XLSX.writeFile(wb, `Classement_WorldCup_${new Date().toISOString().slice(0, 19)}.xlsx`);
-        showNotification('Export Excel', 'Fichier généré avec succès', 'success');
     });
 
-    function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])); }
+    // Event Listeners
+    document.getElementById('loginBtn').onclick = async () => {
+        try {
+            await auth.signInWithEmailAndPassword(document.getElementById('loginEmail').value, document.getElementById('loginPassword').value);
+        } catch (err) { showMessage(document.getElementById('loginMessage'), err.message); }
+    };
+    document.getElementById('registerBtn').onclick = async () => {
+        const full = document.getElementById('regFullName').value;
+        const dept = document.getElementById('regDepartment').value;
+        const email = document.getElementById('regEmail').value;
+        const pwd = document.getElementById('regPassword').value;
+        if (!full || !email || pwd.length < 6) { showMessage(document.getElementById('registerMessage'), 'Champs invalides'); return; }
+        try {
+            const cred = await auth.createUserWithEmailAndPassword(email, pwd);
+            await db.ref(`users/${cred.user.uid}`).set({ fullName: full, department: dept, email: email, totalPoints: 0, badges: [] });
+            showMessage(document.getElementById('registerMessage'), 'Inscription réussie !', false);
+            setTimeout(() => { document.getElementById('registerForm').style.display = 'none'; document.getElementById('loginForm').style.display = 'block'; }, 1500);
+        } catch (err) { showMessage(document.getElementById('registerMessage'), err.message); }
+    };
+    document.getElementById('showRegister').onclick = () => { document.getElementById('loginForm').style.display = 'none'; document.getElementById('registerForm').style.display = 'block'; };
+    document.getElementById('showLogin').onclick = () => { document.getElementById('registerForm').style.display = 'none'; document.getElementById('loginForm').style.display = 'block'; };
+    document.getElementById('adminLogoutBtn').onclick = () => auth.signOut();
+    document.getElementById('userLogoutBtn').onclick = () => auth.signOut();
+    document.getElementById('addMatchBtn').onclick = async () => {
+        const home = document.getElementById('homeTeam').value.trim();
+        const away = document.getElementById('awayTeam').value.trim();
+        const date = document.getElementById('matchDate').value;
+        const winnerPoints = parseInt(document.getElementById('winnerPoints').value) || 5;
+        const exactScorePoints = parseInt(document.getElementById('exactScorePoints').value) || 10;
+        const isSpecial = document.getElementById('isSpecialMatch').checked;
+        if (!home || !away || !date) { showMessage(document.getElementById('adminMessage'), 'Complétez tous les champs'); return; }
+        await db.ref('matches').push({
+            homeTeam: home, awayTeam: away, datetime: date, finalHome: null, finalAway: null, closed: false,
+            winnerPoints: winnerPoints, exactScorePoints: exactScorePoints, isSpecial: isSpecial
+        });
+        document.getElementById('homeTeam').value = '';
+        document.getElementById('awayTeam').value = '';
+        document.getElementById('matchDate').value = '';
+        document.getElementById('winnerPoints').value = '5';
+        document.getElementById('exactScorePoints').value = '10';
+        document.getElementById('isSpecialMatch').checked = false;
+        showMessage(document.getElementById('adminMessage'), 'Match ajouté !', false);
+        await loadAdminMatchesWithPredictions();
+    };
+    document.getElementById('exportExcelBtn')?.addEventListener('click', async () => {
+        try {
+            const usersSnap = await db.ref('users').once('value');
+            const users = usersSnap.val() || {};
+            const data = [['Rang', 'Nom complet', 'Département', 'Points totaux', 'Badges']];
+            const ranking = [];
+            for (const [userId, user] of Object.entries(users)) {
+                if (user.email !== 'wkwtunisia@gmail.com') ranking.push({ name: user.fullName || user.email, department: user.department || 'N/A', points: user.totalPoints || 0, badges: (user.badges || []).length });
+            }
+            ranking.sort((a, b) => b.points - a.points);
+            ranking.forEach((user, index) => data.push([index + 1, user.name, user.department, user.points, user.badges]));
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Classement_Complet');
+            XLSX.writeFile(wb, `Classement_WorldCup_${new Date().toISOString().slice(0, 19)}.xlsx`);
+            showNotification('Export Excel', 'Fichier généré avec succès', 'success');
+        } catch(e) { showNotification('Erreur', e.message, 'error'); }
+    });
+    document.getElementById('saveWorldCupBetBtn').onclick = () => saveWorldCupBet();
+    document.getElementById('setWinnerBtn').onclick = () => setWorldCupWinner();
+    document.getElementById('mobileMenuToggle').onclick = () => {
+        document.querySelectorAll('.sidebar').forEach(s => s.classList.toggle('open'));
+    };
+    
+    // Periodic updates
+    setInterval(async () => {
+        const user = auth.currentUser;
+        if(user && user.email !== 'wkwtunisia@gmail.com') {
+            await updatePodium();
+            await loadCompleteRanking('userRankingContainer');
+            await loadUserMatchesSeparated(user.uid);
+        }
+        if(user && user.email === 'wkwtunisia@gmail.com') {
+            await loadCompleteRanking('usersRankingContainer');
+            await loadAdminMatchesWithPredictions();
+            await loadAllWorldCupBets();
+        }
+    }, 30000);
 </script>
 </body>
 </html>
