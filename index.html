@@ -435,18 +435,6 @@
             color: white;
         }
 
-        /* Bloqué */
-        .btn-disabled {
-            background: #94a3b8;
-            color: #475569;
-            cursor: not-allowed;
-            opacity: 0.6;
-        }
-        .btn-disabled:hover {
-            transform: none;
-            box-shadow: none;
-        }
-
         .closed-badge {
             background: #ef4444;
             color: white;
@@ -470,7 +458,6 @@
             margin-top: 10px;
         }
 
-        /* Classement complet avec tous les points */
         .ranking-full-table {
             width: 100%;
             background: white;
@@ -513,7 +500,6 @@
             transition: width 0.5s ease;
         }
 
-        /* CSS Résultat final stylisé */
         .final-result-section {
             background: linear-gradient(135deg, #1e293b, #0f172a);
             border-radius: 24px;
@@ -609,7 +595,6 @@
             50% { transform: scale(1.05); opacity: 1; }
         }
 
-        /* Match Cards */
         .match-card, .match-admin-card {
             background: white;
             border-radius: 20px;
@@ -731,7 +716,6 @@
             border-left: 4px solid #FFD700;
         }
 
-        /* Tutorial Modal */
         .tutorial-modal {
             position: fixed;
             top: 0;
@@ -882,7 +866,6 @@
             margin-top: 5px;
         }
 
-        /* Tableau des pronostics admin */
         .bets-table {
             width: 100%;
             margin-top: 15px;
@@ -916,6 +899,30 @@
             border-bottom: 1px solid #e2e8f0;
         }
         .wc-bets-table tr:hover { background: #fef9e7; }
+
+        .world-cup-bet-card {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border-radius: 24px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 2px solid #FFD700;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .world-cup-bet-card::before {
+            content: '🏆';
+            position: absolute;
+            bottom: -20px;
+            right: -20px;
+            font-size: 100px;
+            opacity: 0.1;
+        }
+        .world-cup-bet-card h3 { color: #FFD700; font-size: 24px; margin-bottom: 15px; }
+        .points-value { font-size: 48px; font-weight: 800; color: #FFD700; margin: 15px 0; }
+        .team-select { width: 100%; max-width: 350px; margin: 20px auto; padding: 15px; font-size: 16px; text-align: center; border-radius: 50px; border: 2px solid #FFD700; background: white; cursor: pointer; transition: all 0.3s; }
+        .team-select:hover { transform: scale(1.02); box-shadow: 0 5px 15px rgba(255,215,0,0.3); }
+        .team-select:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
         @media (max-width: 768px) {
             .mobile-menu-toggle { display: block; }
@@ -1034,7 +1041,6 @@
                     <button class="btn btn-primary" id="setWinnerBtn">Valider le vainqueur (15 points)</button>
                     <div id="winnerMessage" style="margin-top:15px;"></div>
                     
-                    <!-- Tableau des pronostics des utilisateurs pour le vainqueur CDM -->
                     <div style="margin-top:30px;">
                         <h4><i class="fas fa-users"></i> Tous les pronostics des utilisateurs</h4>
                         <div id="allWorldCupBetsContainer"></div>
@@ -1084,11 +1090,11 @@
             </div>
 
             <div id="worldCupBetPanel" class="content-panel active">
-                <div class="world-cup-bet-card" style="background: linear-gradient(135deg, #1e293b, #0f172a); border-radius: 24px; padding: 25px; margin-bottom: 25px; border: 2px solid #FFD700; text-align: center;">
+                <div class="world-cup-bet-card">
                     <h3><i class="fas fa-trophy"></i> Qui va gagner la Coupe du Monde 2026 ?</h3>
-                    <div class="points-value" style="font-size: 48px; font-weight: 800; color: #FFD700; margin: 15px 0;">🏆 15 POINTS 🏆</div>
+                    <div class="points-value">🏆 15 POINTS 🏆</div>
                     <div id="wcCountdown"></div>
-                    <select id="worldCupWinnerSelect" class="team-select" style="width: 100%; max-width: 350px; margin: 20px auto; padding: 15px; border-radius: 50px; border: 2px solid #FFD700;">
+                    <select id="worldCupWinnerSelect" class="team-select">
                         <option value="">-- Sélectionnez une équipe --</option>
                     </select>
                     <button class="btn btn-primary" id="saveWorldCupBetBtn">🏆 Enregistrer mon pronostic</button>
@@ -1136,6 +1142,10 @@
         "Uruguay", "Colombie", "Chili", "Pérou", "Croatie", "Serbie", "Suisse", "Suède", "Danemark",
         "Pologne", "République Tchèque", "Autriche", "Turquie", "Canada", "Costa Rica", "Nouvelle-Zélande"
     ];
+
+    // DATE DE FERMETURE DES PARIS POUR LE VAINQUEUR CDM (2 heures avant le premier match)
+    // Le premier match de la CDM 2026 est prévu le 11 juin 2026 à 20h00
+    const WORLD_CUP_BETTING_DEADLINE = new Date(2026, 5, 11, 18, 0, 0); // 11 Juin 2026 à 18h00 (2h avant le 1er match)
 
     let tempFinalResults = {};
     let countdownIntervals = {};
@@ -1434,7 +1444,45 @@
         } catch(e) { console.warn(e); }
     }
 
-    // World Cup Winner Functions
+    // World Cup Winner Functions - Fermeture 2h avant le premier match
+    function isWorldCupBettingClosed() {
+        return new Date() >= WORLD_CUP_BETTING_DEADLINE;
+    }
+
+    function getWorldCupTimeRemaining() {
+        const now = new Date();
+        if (now >= WORLD_CUP_BETTING_DEADLINE) return { type: 'closed', text: '🔒 Paris fermés - La compétition a commencé' };
+        const remaining = WORLD_CUP_BETTING_DEADLINE - now;
+        const days = Math.floor(remaining / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((remaining % (86400000)) / 3600000);
+        const minutes = Math.floor((remaining % 3600000) / 60000);
+        const seconds = Math.floor((remaining % 60000) / 1000);
+        
+        if (days > 0) return { type: 'open', text: `⏰ Plus que ${days}j ${hours}h pour parier sur le vainqueur !` };
+        if (hours > 0) return { type: 'open', text: `⏰ Plus que ${hours}h ${minutes}m pour parier sur le vainqueur !` };
+        return { type: 'open', text: `⏰ Plus que ${minutes}m ${seconds}s pour parier sur le vainqueur !` };
+    }
+
+    function startWorldCupCountdown() {
+        const updateCountdown = () => {
+            const countdownDiv = document.getElementById('wcCountdown');
+            if(!countdownDiv) return;
+            const remaining = getWorldCupTimeRemaining();
+            if (remaining.type === 'closed') {
+                countdownDiv.innerHTML = `<div class="closed-badge"><i class="fas fa-lock"></i> ${remaining.text}</div>`;
+                // Désactiver le sélecteur et le bouton
+                const select = document.getElementById('worldCupWinnerSelect');
+                const saveBtn = document.getElementById('saveWorldCupBetBtn');
+                if(select) select.disabled = true;
+                if(saveBtn) { saveBtn.disabled = true; saveBtn.style.opacity = '0.6'; }
+            } else {
+                countdownDiv.innerHTML = `<div class="countdown-timer"><i class="fas fa-hourglass-half"></i> ${remaining.text}</div>`;
+            }
+        };
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+    }
+
     async function checkAndAwardWorldCupPoints() {
         try {
             const settingsSnap = await db.ref('settings/worldCupWinner').once('value');
@@ -1460,31 +1508,6 @@
         } catch(e) { console.warn(e); }
     }
 
-    function isWorldCupBettingClosed() {
-        const finalDate = new Date('2026-07-19T20:00:00');
-        return new Date() > finalDate;
-    }
-
-    function startWorldCupCountdown() {
-        const finalDate = new Date('2026-07-19T20:00:00');
-        const updateCountdown = () => {
-            const now = new Date();
-            if(now > finalDate) {
-                const countdownDiv = document.getElementById('wcCountdown');
-                if(countdownDiv) countdownDiv.innerHTML = '<div class="closed-badge"><i class="fas fa-lock"></i> Paris fermés - La compétition est terminée</div>';
-                return;
-            }
-            const diff = finalDate - now;
-            const days = Math.floor(diff / (1000*60*60*24));
-            const hours = Math.floor((diff % (86400000))/3600000);
-            const minutes = Math.floor((diff % 3600000)/60000);
-            const countdownDiv = document.getElementById('wcCountdown');
-            if(countdownDiv) countdownDiv.innerHTML = `<div class="countdown-timer"><i class="fas fa-hourglass-half"></i> ⏰ Plus que ${days}j ${hours}h ${minutes}m pour parier sur le vainqueur !</div>`;
-        };
-        updateCountdown();
-        setInterval(updateCountdown, 60000);
-    }
-
     async function loadWorldCupBetForUser(userId) {
         try {
             const betSnap = await db.ref(`worldCupBets/${userId}`).once('value');
@@ -1500,7 +1523,7 @@
                 if(select) select.disabled = true;
                 if(saveBtn) { saveBtn.disabled = true; saveBtn.style.opacity = '0.6'; }
                 if(bet) displayDiv.innerHTML = `<i class="fas fa-check-circle"></i> Votre pronostic: <strong>${bet.team}</strong> ${bet.pointsEarned ? `✅ +${bet.pointsEarned} pts` : ''}`;
-                else displayDiv.innerHTML = `<i class="fas fa-times-circle"></i> Vous n'avez pas parié - Paris fermés`;
+                else displayDiv.innerHTML = `<i class="fas fa-times-circle"></i> Vous n'avez pas parié - Paris fermés (2h avant le 1er match)`;
                 return;
             }
             
@@ -1581,7 +1604,7 @@
                         <td>${escapeHtml(bet.department)}</td>
                         <td><strong>🏆 ${escapeHtml(bet.team)}</strong></td>
                         <td>${dateStr}</td>
-                        <td class="point-badge" style="background:#fef3c7; padding:4px 8px; border-radius:12px; text-align:center;">${bet.pointsEarned} pts</td>
+                        <td style="background:#fef3c7; padding:4px 8px; border-radius:12px; text-align:center;">${bet.pointsEarned} pts</td>
                         <td ${statusClass}>${status}</td>
                     </tr>`;
                 });
@@ -1605,7 +1628,7 @@
         const user = auth.currentUser;
         if(!user) { showNotification('Erreur', 'Connectez-vous d\'abord', 'error'); return; }
         if(isWorldCupBettingClosed()) {
-            showNotification('Impossible', 'Les paris sur le vainqueur sont fermés', 'error');
+            showNotification('Impossible', 'Les paris sur le vainqueur sont fermés (2h avant le premier match)', 'error');
             return;
         }
         const selectedTeam = document.getElementById('worldCupWinnerSelect').value;
