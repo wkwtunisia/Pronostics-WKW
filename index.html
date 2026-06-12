@@ -1144,8 +1144,8 @@
     ];
 
     // DATE DE FERMETURE DES PARIS POUR LE VAINQUEUR CDM (2 heures avant le premier match)
-    // Le premier match de la CDM 2026 est prévu le 11 juin 2026 à 20h00
-    const WORLD_CUP_BETTING_DEADLINE = new Date(2026, 5, 11, 18, 0, 0); // 11 Juin 2026 à 18h00 (2h avant le 1er match)
+    // Le premier match de la CDM 2026 est prévu le 14 juin 2026 à 20h00
+    const WORLD_CUP_BETTING_DEADLINE = new Date(2026, 5, 14, 18, 0, 0); // 14 Juin 2026 à 18h00 (2h avant le 1er match)
 
     let tempFinalResults = {};
     let countdownIntervals = {};
@@ -1444,7 +1444,7 @@
         } catch(e) { console.warn(e); }
     }
 
-    // World Cup Winner Functions - Fermeture 2h avant le premier match
+    // World Cup Winner Functions - Fermeture 2h avant le premier match (14 Juin 2026)
     function isWorldCupBettingClosed() {
         return new Date() >= WORLD_CUP_BETTING_DEADLINE;
     }
