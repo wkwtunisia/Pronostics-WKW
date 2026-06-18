@@ -1875,6 +1875,56 @@
         }
 
         /* ============================================================
+                   TOP SCORER PLAYER LIST
+                   ============================================================ */
+        .player-list-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+            gap: 12px;
+            margin: 16px 0;
+        }
+
+        .player-card {
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-sm);
+            padding: 12px 16px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .player-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--gold);
+            box-shadow: 0 8px 25px var(--shadow-light);
+        }
+
+        .player-card.selected {
+            border-color: var(--gold);
+            background: rgba(255, 215, 0, 0.08);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.1);
+        }
+
+        .player-card .player-name {
+            font-weight: 700;
+            color: var(--text-primary);
+            font-size: 15px;
+        }
+
+        .player-card .player-team {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .player-card .player-flag {
+            font-size: 28px;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        /* ============================================================
                    HISTORIQUE
                    ============================================================ */
         .history-item {
@@ -2072,7 +2122,7 @@
         }
 
         /* ============================================================
-                   TABLEAUX DES PRONOSTICS CDM
+                   TABLEAUX DES PRONOSTICS CDM & TOP SCORER
                    ============================================================ */
         .wc-bets-table {
             width: 100%;
@@ -2494,6 +2544,10 @@
             .theme-toggle-wrapper {
                 align-self: flex-start;
             }
+
+            .player-list-grid {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            }
         }
 
         @media (max-width: 480px) {
@@ -2570,6 +2624,10 @@
 
             .theme-toggle.active .toggle-slider {
                 left: 18px;
+            }
+
+            .player-list-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
             }
         }
     </style>
@@ -2659,6 +2717,7 @@
                 <ul class="nav-menu">
                     <li class="nav-item"><div class="nav-link active" data-panel="addMatch"><i class="fas fa-plus-circle"></i><span>Ajouter un match</span></div></li>
                     <li class="nav-item"><div class="nav-link" data-panel="worldCupWinner"><i class="fas fa-trophy"></i><span>🏆 Vainqueur CDM</span></div></li>
+                    <li class="nav-item"><div class="nav-link" data-panel="topScorerAdmin"><i class="fas fa-futbol"></i><span>⚽ Meilleur butteur</span></div></li>
                     <li class="nav-item"><div class="nav-link" data-panel="matches"><i class="fas fa-chart-line"></i><span>Matchs &amp; Pronostics</span></div></li>
                     <li class="nav-item"><div class="nav-link" data-panel="ranking"><i class="fas fa-trophy"></i><span>Classement</span></div></li>
                 </ul>
@@ -2727,6 +2786,28 @@
                     </div>
                 </div>
 
+                <!-- Panel: Meilleur butteur (Admin) -->
+                <div id="topScorerAdminPanel" class="content-panel">
+                    <div class="admin-panel">
+                        <h3><i class="fas fa-futbol"></i> Meilleur butteur · Top Scorer</h3>
+                        <div style="margin-bottom:20px;">
+                            <p style="color:var(--text-secondary);font-size:14px;">Chaque utilisateur peut pronostiquer un joueur. 20 points si juste. Les paris ferment 10 jours après le début de la compétition (14/06/2026).</p>
+                            <div id="topScorerCountdown" style="margin:10px 0;"></div>
+                        </div>
+                        <div class="form-group"><label>🏆 Définir le meilleur butteur (gagnant)</label>
+                            <select id="adminTopScorerSelect" style="width:100%;padding:14px;">
+                                <option value="">-- Sélectionnez un joueur --</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary" id="setTopScorerBtn"><i class="fas fa-check-circle"></i> Valider le meilleur butteur (20 points)</button>
+                        <div id="topScorerMessage" style="margin-top:16px;"></div>
+                        <div style="margin-top:30px;">
+                            <h4 style="font-size:16px;color:var(--text-secondary);"><i class="fas fa-users"></i> Tous les pronostics des utilisateurs</h4>
+                            <div id="allTopScorerBetsContainer"></div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Panel: Matchs -->
                 <div id="matchesPanel" class="content-panel">
                     <div class="admin-panel">
@@ -2789,6 +2870,7 @@
                 </div>
                 <ul class="nav-menu">
                     <li class="nav-item"><div class="nav-link active" data-panel="worldCupBet"><i class="fas fa-trophy"></i><span>🏆 Vainqueur CDM</span></div></li>
+                    <li class="nav-item"><div class="nav-link" data-panel="topScorerBet"><i class="fas fa-futbol"></i><span>⚽ Meilleur butteur</span></div></li>
                     <li class="nav-item"><div class="nav-link" data-panel="userMatchesActive"><i class="fas fa-calendar-alt"></i><span>Matchs à pronostiquer</span></div></li>
                     <li class="nav-item"><div class="nav-link" data-panel="userMatchesCompleted"><i class="fas fa-check-circle"></i><span>Matchs terminés</span></div></li>
                     <li class="nav-item"><div class="nav-link" data-panel="userHistory"><i class="fas fa-history"></i><span>Mon historique</span></div></li>
@@ -2841,6 +2923,23 @@
                         </select>
                         <button class="btn btn-primary" id="saveWorldCupBetBtn"><i class="fas fa-save"></i> Enregistrer mon pronostic</button>
                         <div id="userWinnerBetDisplay" style="margin-top:16px;padding:12px 16px;background:var(--bg-glass);border-radius:16px;border:1px solid var(--glass-border);"></div>
+                    </div>
+                </div>
+
+                <!-- Panel: Meilleur butteur (User) -->
+                <div id="topScorerBetPanel" class="content-panel">
+                    <div class="world-cup-bet-card" style="border-color:rgba(255,215,0,0.2);">
+                        <h3><i class="fas fa-futbol"></i> Meilleur butteur · Top Scorer</h3>
+                        <div class="points-value">⚽ 20 POINTS ⚽</div>
+                        <div id="topScorerCountdownUser"></div>
+                        <div style="margin:16px 0;">
+                            <p style="color:var(--text-secondary);font-size:14px;">Choisissez le joueur qui marquera le plus de buts :</p>
+                            <div id="topScorerPlayerList" class="player-list-grid"></div>
+                        </div>
+                        <div style="margin-top:10px;">
+                            <button class="btn btn-primary" id="saveTopScorerBetBtn"><i class="fas fa-save"></i> Enregistrer mon pronostic</button>
+                        </div>
+                        <div id="userTopScorerBetDisplay" style="margin-top:16px;padding:12px 16px;background:var(--bg-glass);border-radius:16px;border:1px solid var(--glass-border);"></div>
                     </div>
                 </div>
 
@@ -2977,7 +3076,6 @@
         // Aussi cliquer sur le wrapper
         document.querySelectorAll('.theme-toggle-wrapper').forEach(wrapper => {
             wrapper.addEventListener('click', (e) => {
-                // Ne pas déclencher deux fois si on clique sur le toggle lui-même
                 if (!e.target.closest('.theme-toggle')) {
                     toggleTheme();
                 }
@@ -2995,7 +3093,44 @@
             "Pologne", "République Tchèque", "Autriche", "Turquie", "Canada", "Costa Rica", "Nouvelle-Zélande"
         ];
 
+        // Liste des joueurs pour le meilleur butteur
+        const topScorerPlayers = [
+            { name: "Kylian Mbappé", team: "France", flag: "🇫🇷" },
+            { name: "Erling Haaland", team: "Norvège", flag: "🇳🇴" },
+            { name: "Harry Kane", team: "Angleterre", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿" },
+            { name: "Julián Quiñones", team: "Mexique", flag: "🇲🇽🇱" },
+            { name: "Lionel Messi", team: "Argentine", flag: "🇦🇷" },
+            { name: "Cristiano Ronaldo", team: "Portugal", flag: "🇵🇹" },
+            { name: "Neymar", team: "Brésil", flag: "🇧🇷" },
+            { name: "Vinicius Jr.", team: "Brésil", flag: "🇧🇷" },
+            { name: "Brahim Díaz", team: "Maroc", flag: "🇲🇦" },
+            { name: "Romelu Lukaku", team: "Belgique", flag: "🇧🇪" },
+            { name: "Lautaro Martínez", team: "Argentine", flag: "🇦🇷" },
+            { name: "Christian Pulisic", team: "États-Unis", flag: "🇺🇸🇸" },
+            { name: "Kenan Yıldız", team: "Turquie", flag: "🇹🇷" },
+            { name: "Arda Güler", team: "Turquie", flag: "🇹🇷" },
+            { name: "Marcus Rashford", team: "Angleterre", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿" },
+            { name: "Ousmane Dembélé", team: "France", flag: "🇫🇷" },
+            { name: "Cody Gakpo", team: "Pays-Bas", flag: "🇳🇱" },
+            { name: "Jamal Musiala", team: "Allemagne", flag: "🇩🇪" },
+            { name: "Timo Werner", team: "Allemagne", flag: "🇩🇷" },
+            { name: "Michael Olise", team: "France", flag: "🇫🇷" },
+            { name: "Lamine Yamal", team: "Espagne", flag: "🇪🇸" },
+            { name: "Bruno Fernandes", team: "Portugal", flag: "🇵🇹" },
+            { name: "Christian Pulisic", team: "USA", flag: "🇺🇸" },
+            { name: "Hirving Lozano", team: "Mexique", flag: "🇲🇽" },
+            { name: "Achraf Hakimi", team: "Maroc", flag: "🇲🇦" },
+            { name: "Sadio Mané", team: "Sénégal", flag: "🇸🇳" },
+            { name: "Mohamed Salah", team: "Égypte", flag: "🇪🇬" },
+            { name: "Ferran Torres", team: "Espagne", flag: "🇪🇸" },
+            { name: "André Ayew", team: "Ghana", flag: "🇬🇭" },
+            { name: "Sardar Azmoun", team: "Iran", flag: "🇮🇷" },
+        ];
+
         const WORLD_CUP_BETTING_DEADLINE = new Date(2026, 5, 14, 18, 0, 0);
+        // Top scorer betting closes 10 days after tournament start (14 June 2026 -> 24 June 2026)
+        const TOP_SCORER_DEADLINE = new Date(2026, 5, 24, 18, 0, 0);
+
         let tempFinalResults = {};
         let countdownIntervals = {};
 
@@ -3078,6 +3213,24 @@
             if (days > 0) return { type: 'open', text: `⏰ Plus que ${days}j ${hours}h pour parier sur le vainqueur !` };
             if (hours > 0) return { type: 'open', text: `⏰ Plus que ${hours}h ${minutes}m pour parier sur le vainqueur !` };
             return { type: 'open', text: `⏰ Plus que ${minutes}m ${seconds}s pour parier sur le vainqueur !` };
+        }
+
+        // Top scorer deadline
+        function isTopScorerBettingClosed() {
+            return new Date() >= TOP_SCORER_DEADLINE;
+        }
+
+        function getTopScorerTimeRemaining() {
+            const now = new Date();
+            if (now >= TOP_SCORER_DEADLINE) return { type: 'closed', text: '🔒 Paris fermés - Compétition en cours' };
+            const remaining = TOP_SCORER_DEADLINE - now;
+            const days = Math.floor(remaining / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((remaining % (86400000)) / 3600000);
+            const minutes = Math.floor((remaining % 3600000) / 60000);
+            const seconds = Math.floor((remaining % 60000) / 1000);
+            if (days > 0) return { type: 'open', text: `⏰ Plus que ${days}j ${hours}h pour parier sur le meilleur butteur !` };
+            if (hours > 0) return { type: 'open', text: `⏰ Plus que ${hours}h ${minutes}m pour parier sur le meilleur butteur !` };
+            return { type: 'open', text: `⏰ Plus que ${minutes}m ${seconds}s pour parier sur le meilleur butteur !` };
         }
 
         // ============================================================
@@ -3368,8 +3521,12 @@
                 for (let matchId in bets) {
                     if (bets[matchId].pointsEarned) total += bets[matchId].pointsEarned;
                 }
+                // World Cup winner
                 const wcBet = (await db.ref(`worldCupBets/${userId}`).once('value')).val();
                 if (wcBet?.pointsEarned) total += wcBet.pointsEarned;
+                // Top scorer
+                const tsBet = (await db.ref(`topScorerBets/${userId}`).once('value')).val();
+                if (tsBet?.pointsEarned) total += tsBet.pointsEarned;
                 await db.ref(`users/${userId}/totalPoints`).set(total);
             } catch (e) {}
         }
@@ -3594,7 +3751,273 @@
             setInterval(updateCountdown, 1000);
         }
 
-        function populateTeamSelects() {
+        // ============================================================
+        // TOP SCORER (Admin)
+        // ============================================================
+        async function populateTopScorerSelects() {
+            const select = document.getElementById('adminTopScorerSelect');
+            if (!select) return;
+            select.innerHTML = '<option value="">-- Sélectionnez un joueur --</option>' +
+                topScorerPlayers.map(p => `<option value="${p.name}">${p.flag} ${p.name} (${p.team})</option>`).join('');
+        }
+
+        async function checkAndAwardTopScorerPoints() {
+            try {
+                const settingsSnap = await db.ref('settings/topScorerWinner').once('value');
+                const settings = settingsSnap.val();
+                if (!settings || !settings.winnerPlayer || settings.pointsAwarded) return;
+                const winnerPlayer = settings.winnerPlayer;
+                const usersSnap = await db.ref('users').once('value');
+                const users = usersSnap.val() || {};
+                const betsSnap = await db.ref('topScorerBets').once('value');
+                const bets = betsSnap.val() || {};
+                for (let [userId, bet] of Object.entries(bets)) {
+                    if (bet.player === winnerPlayer && users[userId] && !bet.pointsAwarded) {
+                        const currentPoints = users[userId].totalPoints || 0;
+                        await db.ref(`users/${userId}/totalPoints`).set(currentPoints + 20);
+                        await db.ref(`topScorerBets/${userId}/pointsAwarded`).set(true);
+                        await db.ref(`topScorerBets/${userId}/pointsEarned`).set(20);
+                        showNotification('⚽ Bonus Meilleur butteur', `${users[userId].fullName} a gagné 20 points !`,
+                            'success');
+                    }
+                }
+                await db.ref('settings/topScorerWinner/pointsAwarded').set(true);
+                startConfetti();
+                await loadAllTopScorerBets();
+            } catch (e) { console.warn(e); }
+        }
+
+        async function loadAllTopScorerBets() {
+            try {
+                const usersSnap = await db.ref('users').once('value');
+                const users = usersSnap.val() || {};
+                const betsSnap = await db.ref('topScorerBets').once('value');
+                const bets = betsSnap.val() || {};
+                const settingsSnap = await db.ref('settings/topScorerWinner').once('value');
+                const settings = settingsSnap.val();
+                const winnerPlayer = settings?.winnerPlayer || null;
+                const pointsAwarded = settings?.pointsAwarded || false;
+
+                let allBets = [];
+                for (let [userId, bet] of Object.entries(bets)) {
+                    if (users[userId] && users[userId].email !== 'wkwtunisia@gmail.com') {
+                        allBets.push({
+                            userName: users[userId].fullName || userId.substring(0, 8),
+                            department: users[userId].department || 'N/A',
+                            player: bet.player,
+                            timestamp: bet.timestamp,
+                            pointsEarned: bet.pointsEarned || 0,
+                            pointsAwarded: bet.pointsAwarded || false,
+                            isWinner: winnerPlayer && bet.player === winnerPlayer
+                        });
+                    }
+                }
+
+                allBets.sort((a, b) => b.timestamp - a.timestamp);
+
+                let html = `<table class="wc-bets-table">
+                    <thead>
+                        <tr><th>👤 Utilisateur</th><th>🏢 Département</th><th>⚽ Pronostic (Joueur)</th><th>📅 Date</th><th>⭐ Points</th><th>🏅 Statut</th></tr>
+                    </thead>
+                    <tbody>`;
+
+                if (allBets.length === 0) {
+                    html += `<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-muted);">Aucun pronostic enregistré</td></tr>`;
+                } else {
+                    allBets.forEach(bet => {
+                        const dateStr = new Date(bet.timestamp).toLocaleString();
+                        let status = '';
+                        let statusClass = '';
+                        if (pointsAwarded) {
+                            if (bet.isWinner) {
+                                status = '✅ Gagnant +20pts';
+                                statusClass = 'style="color:#10b981;font-weight:bold;"';
+                            } else if (bet.pointsAwarded) {
+                                status = '💰 Points attribués';
+                                statusClass = 'style="color:#f59e0b;"';
+                            } else {
+                                status = '❌ Perdant';
+                                statusClass = 'style="color:#ef4444;"';
+                            }
+                        } else if (winnerPlayer) {
+                            status = bet.isWinner ? '🏆 Vainqueur (en attente)' : '❌ Perdant';
+                            statusClass = bet.isWinner ? 'style="color:#FFD700;font-weight:bold;"' :
+                                'style="color:#ef4444;"';
+                        } else {
+                            status = '⏳ En attente du résultat';
+                            statusClass = 'style="color:var(--text-muted);"';
+                        }
+
+                        html += `<tr>
+                            <td><i class="fas fa-user-circle"></i> ${escapeHtml(bet.userName)}</td>
+                            <td>${escapeHtml(bet.department)}</td>
+                            <td><strong>⚽ ${escapeHtml(bet.player)}</strong></td>
+                            <td>${dateStr}</td>
+                            <td><span class="point-badge">${bet.pointsEarned} pts</span></td>
+                            <td ${statusClass}>${status}</td>
+                        </tr>`;
+                    });
+                }
+
+                html += `</tbody></table>`;
+
+                const totalBets = allBets.length;
+                const winnerBets = allBets.filter(b => b.isWinner).length;
+                html =
+                    `<div style="margin-bottom:16px;padding:14px 18px;background:var(--bg-glass);border-radius:16px;border:1px solid var(--glass-border);">
+                        <strong style="color:var(--text-secondary);"><i class="fas fa-chart-pie"></i> Résumé :</strong> <span style="color:var(--text-primary);">${totalBets} participants</span>
+                        ${winnerPlayer ? `<span style="margin-left:12px;color:var(--gold);">⚽ ${winnerPlayer}</span>` : ''}
+                        ${winnerBets > 0 ? `<span style="margin-left:12px;color:#10b981;">✅ ${winnerBets} ont parié juste</span>` : ''}
+                    </div>` + html;
+
+                const container = document.getElementById('allTopScorerBetsContainer');
+                if (container) container.innerHTML = html;
+            } catch (e) { console.warn(e); }
+        }
+
+        window.setTopScorer = async function() {
+            const winnerPlayer = document.getElementById('adminTopScorerSelect').value;
+            if (!winnerPlayer) { showNotification('Erreur', 'Sélectionnez un joueur', 'error'); return; }
+            try {
+                const settingsSnap = await db.ref('settings/topScorerWinner').once('value');
+                const settings = settingsSnap.val();
+                if (settings?.pointsAwarded) { showNotification('Erreur', 'Les points ont déjà été attribués',
+                    'error'); return; }
+                await db.ref('settings/topScorerWinner').set({ winnerPlayer: winnerPlayer, pointsAwarded: false });
+                document.getElementById('topScorerMessage').innerHTML =
+                    `<div style="color:#10b981;padding:12px;background:rgba(16,185,129,0.08);border-radius:12px;border:1px solid rgba(16,185,129,0.1);">✅ Meilleur butteur défini : <strong>${winnerPlayer}</strong>. Les points seront attribués automatiquement.</div>`;
+                showNotification('Meilleur butteur défini', winnerPlayer, 'success');
+                await checkAndAwardTopScorerPoints();
+                await loadCompleteRanking('usersRankingContainer');
+                await loadCompleteRanking('userRankingContainer');
+                await loadAllTopScorerBets();
+                await updatePodium();
+            } catch (e) { showNotification('Erreur', e.message, 'error'); }
+        };
+
+        // ============================================================
+        // TOP SCORER (User)
+        // ============================================================
+        function renderTopScorerPlayerList(selectedPlayer = null) {
+            const container = document.getElementById('topScorerPlayerList');
+            if (!container) return;
+            let html = '';
+            topScorerPlayers.forEach(p => {
+                const isSelected = (selectedPlayer === p.name);
+                html += `<div class="player-card ${isSelected ? 'selected' : ''}" data-player="${p.name}" onclick="selectTopScorerPlayer('${p.name}')">
+                    <span class="player-flag">${p.flag}</span>
+                    <div class="player-name">${escapeHtml(p.name)}</div>
+                    <div class="player-team">${escapeHtml(p.team)}</div>
+                </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        let selectedTopScorerPlayer = null;
+
+        window.selectTopScorerPlayer = function(playerName) {
+            selectedTopScorerPlayer = playerName;
+            document.querySelectorAll('.player-card').forEach(card => {
+                card.classList.toggle('selected', card.dataset.player === playerName);
+            });
+        };
+
+        window.saveTopScorerBet = async function() {
+            const user = auth.currentUser;
+            if (!user) { showNotification('Erreur', 'Connectez-vous d\'abord', 'error'); return; }
+            if (isTopScorerBettingClosed()) {
+                showNotification('Impossible', 'Les paris sur le meilleur butteur sont fermés (10 jours après le début)',
+                    'error');
+                return;
+            }
+            if (!selectedTopScorerPlayer) { showNotification('Erreur', 'Sélectionnez un joueur', 'error'); return; }
+            try {
+                const existingSnap = await db.ref(`topScorerBets/${user.uid}`).once('value');
+                if (existingSnap.exists()) { showNotification('Erreur', 'Vous avez déjà parié !', 'error'); return; }
+                await db.ref(`topScorerBets/${user.uid}`).set({
+                    player: selectedTopScorerPlayer,
+                    timestamp: Date.now(),
+                    pointsEarned: 0
+                });
+                showNotification('Pronostic enregistré !', `${selectedTopScorerPlayer} - 20 points si meilleur butteur`,
+                    'success');
+                await loadTopScorerBetForUser(user.uid);
+                startConfetti();
+            } catch (e) { showNotification('Erreur', e.message, 'error'); }
+        };
+
+        async function loadTopScorerBetForUser(userId) {
+            try {
+                const betSnap = await db.ref(`topScorerBets/${userId}`).once('value');
+                const bet = betSnap.val();
+                const settingsSnap = await db.ref('settings/topScorerWinner').once('value');
+                const settings = settingsSnap.val();
+                const displayDiv = document.getElementById('userTopScorerBetDisplay');
+                if (!displayDiv) return;
+
+                if (bet) {
+                    renderTopScorerPlayerList(bet.player);
+                    selectedTopScorerPlayer = bet.player;
+                } else {
+                    renderTopScorerPlayerList(null);
+                    selectedTopScorerPlayer = null;
+                }
+
+                if (isTopScorerBettingClosed()) {
+                    document.querySelectorAll('.player-card').forEach(c => c.style.opacity = '0.6');
+                    document.getElementById('saveTopScorerBetBtn').disabled = true;
+                    document.getElementById('saveTopScorerBetBtn').style.opacity = '0.6';
+                    if (bet) displayDiv.innerHTML =
+                        `<i class="fas fa-check-circle" style="color:#10b981;"></i> Votre pronostic : <strong style="color:var(--gold);">${escapeHtml(bet.player)}</strong> ${bet.pointsEarned ? `✅ +${bet.pointsEarned} pts` : ''}`;
+                    else displayDiv.innerHTML =
+                        `<i class="fas fa-times-circle" style="color:#ef4444;"></i> Vous n'avez pas parié — Paris fermés (10 jours après le début)`;
+                    return;
+                }
+
+                if (bet && !settings?.pointsAwarded) {
+                    document.querySelectorAll('.player-card').forEach(c => c.style.opacity = '0.6');
+                    document.getElementById('saveTopScorerBetBtn').disabled = true;
+                    document.getElementById('saveTopScorerBetBtn').style.opacity = '0.6';
+                    displayDiv.innerHTML =
+                        `<i class="fas fa-lock" style="color:#f59e0b;"></i> Votre pronostic : <strong style="color:var(--gold);">${escapeHtml(bet.player)}</strong> — En attente du résultat final`;
+                } else if (!bet) {
+                    document.querySelectorAll('.player-card').forEach(c => c.style.opacity = '1');
+                    document.getElementById('saveTopScorerBetBtn').disabled = false;
+                    document.getElementById('saveTopScorerBetBtn').style.opacity = '1';
+                    displayDiv.innerHTML = '';
+                }
+            } catch (e) { console.warn(e); }
+        }
+
+        function startTopScorerCountdown() {
+            const updateCountdown = () => {
+                const countdownDivs = document.querySelectorAll('#topScorerCountdown, #topScorerCountdownUser');
+                countdownDivs.forEach(div => {
+                    if (!div) return;
+                    const remaining = getTopScorerTimeRemaining();
+                    if (remaining.type === 'closed') {
+                        div.innerHTML =
+                            `<div class="closed-badge"><i class="fas fa-lock"></i> ${remaining.text}</div>`;
+                        if (div.id === 'topScorerCountdownUser') {
+                            document.querySelectorAll('.player-card').forEach(c => c.style.opacity = '0.6');
+                            document.getElementById('saveTopScorerBetBtn').disabled = true;
+                            document.getElementById('saveTopScorerBetBtn').style.opacity = '0.6';
+                        }
+                    } else {
+                        div.innerHTML =
+                            `<div class="countdown-timer"><i class="fas fa-hourglass-half"></i> ${remaining.text}</div>`;
+                    }
+                });
+            };
+            updateCountdown();
+            setInterval(updateCountdown, 1000);
+        }
+
+        // ============================================================
+        // FONCTIONS GLOBALES POUR LES SÉLECTEURS
+        // ============================================================
+        // Fonction globale pour remplir les sélecteurs d'équipes (utilisée par l'admin et l'utilisateur)
+        window.populateTeamSelects = function() {
             const selectors = ['worldCupWinnerSelect', 'adminWinnerTeam'];
             selectors.forEach(selectorId => {
                 const select = document.getElementById(selectorId);
@@ -3603,7 +4026,15 @@
                         nationalTeams.map(team => `<option value="${team}">${team}</option>`).join('');
                 }
             });
-        }
+        };
+
+        // Fonction globale pour remplir le sélecteur de top scorer admin
+        window.populateTopScorerSelects = function() {
+            const select = document.getElementById('adminTopScorerSelect');
+            if (!select) return;
+            select.innerHTML = '<option value="">-- Sélectionnez un joueur --</option>' +
+                topScorerPlayers.map(p => `<option value="${p.name}">${p.flag} ${p.name} (${p.team})</option>`).join('');
+        };
 
         // ============================================================
         // MATCHES ADMIN
@@ -3841,7 +4272,6 @@
                         <div class="points-config" style="text-align:center;margin:8px 0;padding:10px 14px;">🏆 Vainqueur=${(match.winnerPoints || 5) * multiplier} pts | 🎯 Score exact=${(match.exactScorePoints || 10) * multiplier} pts</div>
                         <div id="countdown_${matchId}"></div>`;
 
-                    // Match terminé
                     if (isClosed) {
                         hasCompleted = true;
                         let extraInfo = '';
@@ -3857,7 +4287,6 @@
                         continue;
                     }
 
-                    // Match actif
                     hasActive = true;
                     if (!existing && !bettingClosed) {
                         activeHtml += cardHtml +
@@ -3914,8 +4343,11 @@
                     await loadCompleteRanking('usersRankingContainer');
                     await loadAdminMatchesWithPredictions();
                     await loadAllWorldCupBets();
-                    populateTeamSelects();
+                    await loadAllTopScorerBets();
+                    window.populateTeamSelects();
+                    window.populateTopScorerSelects();
                     showNotification('Bienvenue Admin', 'Connecté avec succès', 'success');
+                    startTopScorerCountdown();
                 } else {
                     userDashboard.classList.remove('hidden');
                     adminDashboard.classList.add('hidden');
@@ -3928,10 +4360,13 @@
                     await displayBadges(user.uid, 'userBadgesContainer');
                     await loadUserMatchesSeparated(user.uid);
                     await loadWorldCupBetForUser(user.uid);
+                    await loadTopScorerBetForUser(user.uid);
                     await updatePodium();
                     startWorldCupCountdown();
+                    startTopScorerCountdown();
                     await checkAndAwardWorldCupPoints();
-                    populateTeamSelects();
+                    await checkAndAwardTopScorerPoints();
+                    window.populateTeamSelects();
                     showTutorial();
                     showNotification('Bienvenue !', 'Connecté avec succès', 'success');
                 }
@@ -4051,8 +4486,10 @@
             } catch (e) { showNotification('Erreur', e.message, 'error'); }
         });
 
-        document.getElementById('saveWorldCupBetBtn').onclick = () => saveWorldCupBet();
-        document.getElementById('setWinnerBtn').onclick = () => setWorldCupWinner();
+        document.getElementById('saveWorldCupBetBtn').onclick = () => window.saveWorldCupBet();
+        document.getElementById('setWinnerBtn').onclick = () => window.setWorldCupWinner();
+        document.getElementById('saveTopScorerBetBtn').onclick = () => window.saveTopScorerBet();
+        document.getElementById('setTopScorerBtn').onclick = () => window.setTopScorer();
 
         document.getElementById('mobileMenuToggle').onclick = () => {
             document.querySelectorAll('.sidebar').forEach(s => s.classList.toggle('open'));
@@ -4072,6 +4509,7 @@
                 await loadCompleteRanking('usersRankingContainer');
                 await loadAdminMatchesWithPredictions();
                 await loadAllWorldCupBets();
+                await loadAllTopScorerBets();
             }
         }, 30000);
     </script>
