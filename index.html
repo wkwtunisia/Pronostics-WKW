@@ -257,6 +257,7 @@
             --sidebar-subtitle: #4a5568;
             --user-avatar-bg: linear-gradient(135deg, #FFD700, #F59E0B);
             --user-avatar-color: #0B132B;
+            --chat-notif-badge: #E94560;
         }
 
         html {
@@ -728,6 +729,7 @@
             border: 1px solid transparent;
             font-weight: 500;
             font-size: 14px;
+            position: relative;
         }
         .nav-link:hover {
             background: rgba(255, 215, 0, 0.08);
@@ -744,6 +746,30 @@
         }
         .nav-link i { width: 22px; font-size: 17px; text-align: center; }
         .nav-link span { font-weight: 500; }
+
+        /* Badge de notification sur le lien du chat */
+        .nav-link .chat-notif-badge {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: var(--red);
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            min-width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 0 4px;
+            border: 2px solid var(--sidebar-bg);
+            box-shadow: 0 2px 8px rgba(233, 69, 96, 0.3);
+            animation: pulseGold 1.5s infinite;
+        }
+        .nav-link .chat-notif-badge.visible {
+            display: flex;
+        }
 
         .sidebar-user {
             margin-top: 28px;
@@ -1933,7 +1959,10 @@
                     <li class="nav-item"><div class="nav-link" data-panel="topScorerAdmin"><i class="fas fa-futbol"></i><span>⚽ Meilleur butteur</span></div></li>
                     <li class="nav-item"><div class="nav-link" data-panel="matches"><i class="fas fa-chart-line"></i><span>Matchs &amp; Pronostics</span></div></li>
                     <li class="nav-item"><div class="nav-link" data-panel="ranking"><i class="fas fa-trophy"></i><span>Classement</span></div></li>
-                    <li class="nav-item"><div class="nav-link" data-panel="publicChat"><i class="fas fa-comments"></i><span>💬 Chat public</span></div></li>
+                    <li class="nav-item"><div class="nav-link" data-panel="publicChat" id="adminChatNav">
+                        <i class="fas fa-comments"></i><span>💬 Chat public</span>
+                        <span class="chat-notif-badge" id="adminChatBadge">0</span>
+                    </div></li>
                 </ul>
                 <div class="sidebar-user">
                     <div class="user-avatar"><i class="fas fa-user-shield"></i></div>
@@ -2105,7 +2134,10 @@
                     <li class="nav-item"><div class="nav-link" data-panel="userHistory"><i class="fas fa-history"></i><span>Mon historique</span></div></li>
                     <li class="nav-item"><div class="nav-link" data-panel="userBadges"><i class="fas fa-medal"></i><span>Mes badges</span></div></li>
                     <li class="nav-item"><div class="nav-link" data-panel="userRanking"><i class="fas fa-trophy"></i><span>Classement</span></div></li>
-                    <li class="nav-item"><div class="nav-link" data-panel="publicChatUser"><i class="fas fa-comments"></i><span>💬 Chat public</span></div></li>
+                    <li class="nav-item"><div class="nav-link" data-panel="publicChatUser" id="userChatNav">
+                        <i class="fas fa-comments"></i><span>💬 Chat public</span>
+                        <span class="chat-notif-badge" id="userChatBadge">0</span>
+                    </div></li>
                 </ul>
                 <div class="sidebar-user">
                     <div class="user-avatar"><i class="fas fa-user-circle"></i></div>
@@ -2320,7 +2352,7 @@
             "Pologne", "République Tchèque", "Autriche", "Turquie", "Canada", "Costa Rica", "Nouvelle-Zélande"
         ];
 
-        const topScorerPlayers = [
+         const topScorerPlayers = [
             { name: "Kylian Mbappé", team: "France", flag: "🇫🇷" },
             { name: "Erling Haaland", team: "Norvège", flag: "🇳🇴" },
             { name: "Harry Kane", team: "Angleterre", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿" },
@@ -2366,6 +2398,116 @@
             { id: 'exact_3', name: '🎯 Précision', description: '3 scores exacts' },
             { id: 'top_3', name: '🏆 Podium', description: 'Être dans le top 3' }
         ];
+
+        // ============================================================
+        // SYSTEME DE NOTIFICATIONS CHAT
+        // ============================================================
+        let chatUnreadCount = {
+            admin: 0,
+            user: 0
+        };
+        let chatNotificationSound = null;
+
+        // Demander la permission pour les notifications
+        function requestNotificationPermission() {
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission().then(permission => {
+                    if (permission === 'granted') {
+                        console.log('Notifications push activées');
+                    }
+                });
+            }
+        }
+
+        // Jouer un son de notification (Web Audio API)
+        function playNotificationSound() {
+            try {
+                const audioCtx = new(window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+
+                oscillator.frequency.value = 800;
+                oscillator.type = 'sine';
+                gainNode.gain.value = 0.15;
+
+                oscillator.start();
+                setTimeout(() => {
+                    oscillator.frequency.value = 1000;
+                }, 100);
+                setTimeout(() => {
+                    oscillator.stop();
+                }, 200);
+            } catch (e) {
+                // Fallback silencieux si l'API Audio n'est pas disponible
+            }
+        }
+
+        // Afficher une notification push
+        function showPushNotification(title, body, icon = '🏆') {
+            if ('Notification' in window && Notification.permission === 'granted') {
+                try {
+                    const notification = new Notification(`💬 ${title}`, {
+                        body: body,
+                        icon: 'data:image/svg+xml,' + encodeURIComponent(`
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r="45" fill="#FFD700"/>
+                                <text x="50" y="65" text-anchor="middle" font-size="50" font-weight="bold">⚽</text>
+                            </svg>
+                        `),
+                        silent: true,
+                        tag: 'chat-message',
+                        requireInteraction: false
+                    });
+                    setTimeout(() => notification.close(), 5000);
+                } catch (e) {
+                    // Ignorer les erreurs de notification
+                }
+            }
+        }
+
+        // Mettre à jour le badge de notification sur l'onglet chat
+        function updateChatBadge(count, isAdmin) {
+            const badgeId = isAdmin ? 'adminChatBadge' : 'userChatBadge';
+            const badge = document.getElementById(badgeId);
+            if (!badge) return;
+
+            if (count > 0) {
+                badge.textContent = count > 9 ? '9+' : count;
+                badge.classList.add('visible');
+                // Animation de pulsation
+                badge.style.animation = 'none';
+                setTimeout(() => {
+                    badge.style.animation = 'pulseGold 0.5s ease 3';
+                }, 10);
+            } else {
+                badge.classList.remove('visible');
+            }
+        }
+
+        // Incrémenter le compteur de messages non lus
+        function incrementChatUnread(isAdmin) {
+            if (isAdmin) {
+                chatUnreadCount.admin++;
+                updateChatBadge(chatUnreadCount.admin, true);
+            } else {
+                chatUnreadCount.user++;
+                updateChatBadge(chatUnreadCount.user, false);
+            }
+        }
+
+        // Réinitialiser le compteur quand on ouvre le chat
+        function resetChatUnread(isAdmin) {
+            if (isAdmin) {
+                chatUnreadCount.admin = 0;
+                updateChatBadge(0, true);
+            } else {
+                chatUnreadCount.user = 0;
+                updateChatBadge(0, false);
+            }
+        }
 
         // ============================================================
         // UTILITAIRES
@@ -2536,7 +2678,7 @@
         }
 
         // ============================================================
-        // CHAT PUBLIC
+        // CHAT PUBLIC AVEC NOTIFICATIONS
         // ============================================================
         function setupChat(userId, username, isAdmin = false) {
             const messagesContainer = isAdmin ? document.getElementById('chatMessagesAdmin') : document.getElementById(
@@ -2548,6 +2690,15 @@
 
             const chatRef = db.ref('chatMessages');
 
+            // Réinitialiser le compteur quand on ouvre le chat
+            const chatNavLink = isAdmin ? document.getElementById('adminChatNav') : document.getElementById('userChatNav');
+            if (chatNavLink) {
+                chatNavLink.addEventListener('click', () => {
+                    resetChatUnread(isAdmin);
+                });
+            }
+
+            // Fonction pour envoyer un message
             async function sendMessage() {
                 const text = input.value.trim();
                 if (!text) return;
@@ -2566,6 +2717,8 @@
                     });
                     input.value = '';
                     input.focus();
+                    // Réinitialiser le compteur quand l'utilisateur envoie un message (il a vu le chat)
+                    resetChatUnread(isAdmin);
                 } catch (e) {
                     showNotification('Erreur', 'Impossible d\'envoyer le message: ' + e.message, 'error');
                 }
@@ -2579,16 +2732,22 @@
                 }
             });
 
+            // Écouter les messages en temps réel
+            let lastMessageTimestamp = 0;
             chatRef.orderByChild('timestamp').limitToLast(100).on('child_added', (snapshot) => {
                 const data = snapshot.val();
                 if (!data) return;
 
+                // Vérifier si le message est de l'utilisateur courant
+                const isOwnMessage = (data.uid === userId);
+
+                // Supprimer le message vide initial
                 const emptyMsg = messagesContainer.querySelector('.chat-empty');
                 if (emptyMsg) emptyMsg.remove();
 
                 const msgDiv = document.createElement('div');
                 msgDiv.className = 'chat-message';
-                if (data.uid === userId) {
+                if (isOwnMessage) {
                     msgDiv.classList.add('own');
                 }
 
@@ -2612,8 +2771,33 @@
 
                 messagesContainer.appendChild(msgDiv);
                 messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+                // ============================================
+                // GÉRER LES NOTIFICATIONS
+                // ============================================
+                // Ne pas notifier les messages de l'utilisateur lui-même
+                if (!isOwnMessage) {
+                    // Incrémenter le compteur de messages non lus
+                    incrementChatUnread(isAdmin);
+
+                    // Jouer un son
+                    playNotificationSound();
+
+                    // Afficher une notification push
+                    const notifTitle = data.isAdmin ? 'Admin' : data.username;
+                    const notifBody = data.message.length > 60 ? data.message.substring(0, 60) + '...' : data.message;
+                    showPushNotification(notifTitle, notifBody);
+
+                    // Afficher une notification in-app
+                    showNotification(
+                        `💬 ${escapeHtml(data.username)}`,
+                        escapeHtml(data.message.length > 100 ? data.message.substring(0, 100) + '...' : data.message),
+                        'info'
+                    );
+                }
             });
 
+            // Nettoyer les anciens messages (garder les 100 derniers)
             chatRef.once('value', (snap) => {
                 const msgs = snap.val();
                 if (!msgs) return;
@@ -2640,6 +2824,7 @@
                     <div class="tutorial-step"><div class="tutorial-step-icon">1</div><div class="tutorial-step-text"><strong>📅 Choisissez un match</strong><span>Sélectionnez un match à venir dans la liste</span></div></div>
                     <div class="tutorial-step"><div class="tutorial-step-icon">2</div><div class="tutorial-step-text"><strong>🎯 Entrez votre pronostic</strong><span>Indiquez le score que vous prévoyez (30 min avant le match)</span></div></div>
                     <div class="tutorial-step"><div class="tutorial-step-icon">3</div><div class="tutorial-step-text"><strong>💬 Chattez</strong><span>Échangez avec les autres participants dans le chat public</span></div></div>
+                    <div class="tutorial-step"><div class="tutorial-step-icon">🔔</div><div class="tutorial-step-text"><strong>Notifications</strong><span>Recevez des alertes en temps réel quand quelqu'un écrit</span></div></div>
                     <div class="tutorial-step"><div class="tutorial-step-icon">🏆</div><div class="tutorial-step-text"><strong>Débloquez des badges</strong><span>Succession de bons pronostics = badges spéciaux!</span></div></div>
                     <div class="tutorial-buttons"><button id="tutorialGotIt">J'ai compris !</button><button id="tutorialDontShow">Ne plus afficher</button></div>
                 </div>
@@ -3659,6 +3844,8 @@
                     setupChat(user.uid, 'Administrateur', true);
                     showNotification('Bienvenue Admin', 'Connecté avec succès', 'success');
                     startTopScorerCountdown();
+                    // Demander la permission pour les notifications
+                    requestNotificationPermission();
                 } else {
                     userDashboard.classList.remove('hidden');
                     adminDashboard.classList.add('hidden');
@@ -3692,6 +3879,8 @@
                     setupChat(user.uid, username, false);
                     showTutorial();
                     showNotification('Bienvenue !', 'Connecté avec succès', 'success');
+                    // Demander la permission pour les notifications
+                    requestNotificationPermission();
                 }
             } else {
                 authContainer.style.display = 'flex';
