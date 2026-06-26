@@ -102,6 +102,7 @@
             --chat-notif-badge: #E94560;
             --breakdown-bg: rgba(255, 215, 0, 0.04);
             --breakdown-border: rgba(255, 215, 0, 0.08);
+            --penalty-bonus-color: #f59e0b;
         }
 
         /* --- Thème clair --- */
@@ -262,6 +263,7 @@
             --user-avatar-color: #0B132B;
             --breakdown-bg: rgba(255, 215, 0, 0.06);
             --breakdown-border: rgba(255, 215, 0, 0.12);
+            --penalty-bonus-color: #d97706;
         }
 
         html { scroll-behavior: smooth; }
@@ -1261,6 +1263,7 @@
         .points-breakdown .line .value.green { color: var(--green); }
         .points-breakdown .line .value.red { color: var(--red); }
         .points-breakdown .line .value.gold { color: var(--gold); }
+        .points-breakdown .line .value.penalty-gold { color: var(--penalty-bonus-color); }
         .points-breakdown .breakdown-title {
             font-size: 12px;
             font-weight: 700;
@@ -1371,13 +1374,18 @@
         }
         .penalty-info i { margin-right: 6px; }
 
-        /* --- PRÉDICTION PENALTY POUR L'UTILISATEUR --- */
+        /* --- PRÉDICTION PENALTY POUR L'UTILISATEUR (visible uniquement pour les matchs nuls) --- */
         .penalty-prediction {
+            display: none;
             margin-top: 12px;
             padding: 12px 16px;
             background: rgba(255, 215, 0, 0.04);
             border-radius: var(--radius-sm);
             border: 1px solid rgba(255, 215, 0, 0.1);
+        }
+        .penalty-prediction.visible {
+            display: block;
+            animation: fadeInUp 0.3s ease;
         }
         .penalty-prediction label {
             font-size: 13px;
@@ -1385,6 +1393,15 @@
             color: var(--text-secondary);
             display: block;
             margin-bottom: 6px;
+        }
+        .penalty-prediction label .bonus-badge {
+            background: var(--penalty-bonus-color);
+            color: white;
+            padding: 1px 8px;
+            border-radius: 40px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-left: 6px;
         }
         .penalty-prediction select {
             width: 100%;
@@ -2908,8 +2925,8 @@
                     <h2><i class="fas fa-graduation-cap"></i> Bienvenue sur Pronostics WKW!</h2>
                     <div class="tutorial-step"><div class="tutorial-step-icon">1</div><div class="tutorial-step-text"><strong>📅 Choisissez un match</strong><span>Sélectionnez un match à venir</span></div></div>
                     <div class="tutorial-step"><div class="tutorial-step-icon">2</div><div class="tutorial-step-text"><strong>🎯 Entrez votre pronostic</strong><span>Indiquez le score (30 min avant le match)</span></div></div>
-                    <div class="tutorial-step"><div class="tutorial-step-icon">⚽</div><div class="tutorial-step-text"><strong>Prédisez les penalties</strong><span>En cas de match nul, choisissez le vainqueur</span></div></div>
-                    <div class="tutorial-step"><div class="tutorial-step-icon">📊</div><div class="tutorial-step-text"><strong>Calcul des points</strong><span>Chaque détail est affiché : score exact, vainqueur, bonus penalty</span></div></div>
+                    <div class="tutorial-step"><div class="tutorial-step-icon">⚽</div><div class="tutorial-step-text"><strong>Prédisez les penalties</strong><span>Si vous prévoyez un match nul, choisissez le vainqueur pour gagner +2 points</span></div></div>
+                    <div class="tutorial-step"><div class="tutorial-step-icon">📊</div><div class="tutorial-step-text"><strong>Calcul des points</strong><span>Chaque détail est affiché : score exact, vainqueur, bonus penalty (+2)</span></div></div>
                     <div class="tutorial-step"><div class="tutorial-step-icon">🏆</div><div class="tutorial-step-text"><strong>Badges</strong><span>Débloquez des badges en progressant !</span></div></div>
                     <div class="tutorial-buttons"><button id="tutorialGotIt">J'ai compris !</button><button id="tutorialDontShow">Ne plus afficher</button></div>
                 </div>
@@ -3099,8 +3116,8 @@
                                         <span class="value ${correctWinner ? 'green' : 'red'}">${correctWinner ? '+ ' + (bd.winnerValue || 0) : '0'}</span>
                                     </div>
                                     <div class="line">
-                                        <span class="label">Bonus penalty (${penaltyBonus > 0 ? '✅ Gagné' : '❌ Non'})</span>
-                                        <span class="value ${penaltyBonus > 0 ? 'green' : 'red'}">${penaltyBonus > 0 ? '+1' : '0'}</span>
+                                        <span class="label">🎯 Bonus penalty (${penaltyBonus > 0 ? '✅ Gagné' : '❌ Non'})</span>
+                                        <span class="value ${penaltyBonus > 0 ? 'penalty-gold' : 'red'}">${penaltyBonus > 0 ? '+2' : '0'}</span>
                                     </div>
                                     <div class="line" style="border-top:2px solid var(--gold);margin-top:4px;padding-top:6px;">
                                         <span class="label"><strong>Total</strong></span>
@@ -3709,7 +3726,38 @@
         };
 
         // ============================================================
-        // MATCHES ADMIN AVEC GESTION DES TIRS AU BUT + DÉTAIL POINTS
+        // FONCTION POUR GÉRER L'AFFICHAGE DU SÉLECTEUR PENALTY
+        // ============================================================
+        function togglePenaltySelector(matchId) {
+            const homeInput = document.getElementById(`home_${matchId}`);
+            const awayInput = document.getElementById(`away_${matchId}`);
+            const penaltyDiv = document.getElementById(`penaltyPredictionContainer_${matchId}`);
+            
+            if (!homeInput || !awayInput || !penaltyDiv) return;
+            
+            const home = parseInt(homeInput.value);
+            const away = parseInt(awayInput.value);
+            
+            // Afficher le sélecteur UNIQUEMENT si les scores sont égaux et valides
+            if (!isNaN(home) && !isNaN(away) && home === away) {
+                penaltyDiv.classList.add('visible');
+                // Réinitialiser la sélection si elle était vide
+                const select = document.getElementById(`penaltyPrediction_${matchId}`);
+                if (select && !select.value) {
+                    // Optionnel: ne pas forcer une sélection
+                }
+            } else {
+                penaltyDiv.classList.remove('visible');
+                // Réinitialiser la sélection quand on cache
+                const select = document.getElementById(`penaltyPrediction_${matchId}`);
+                if (select) {
+                    select.value = '';
+                }
+            }
+        }
+
+        // ============================================================
+        // MATCHES ADMIN AVEC GESTION DES TIRS AU BUT
         // ============================================================
         async function loadAdminMatchesWithPredictions() {
             try {
@@ -3785,14 +3833,13 @@
                         matchPronostics.forEach(p => {
                             const pointsEarned = p.bet.pointsEarned || 0;
                             const validated = p.bet.validated ? '✅ Oui' : '⏳ Non';
-                            // Afficher le détail du calcul dans l'admin
                             let detail = '';
                             if (p.bet.validated && p.bet.pointsBreakdown) {
                                 const bd = p.bet.pointsBreakdown;
                                 const parts = [];
                                 if (bd.exactScore) parts.push('Score exact');
                                 if (bd.correctWinner) parts.push('Vainqueur');
-                                if (bd.penaltyBonus > 0) parts.push('Bonus penalty');
+                                if (bd.penaltyBonus > 0) parts.push('Bonus penalty +2');
                                 detail = parts.join(' + ') || 'Aucun';
                             }
                             html += `<tr>
@@ -3829,7 +3876,7 @@
         };
 
         // ============================================================
-        // VALIDATION DES MATCHS AVEC DÉTAIL DES POINTS
+        // VALIDATION DES MATCHS AVEC BONUS PENALTY +2
         // ============================================================
         window.validateMatchResult = async (matchId) => {
             const finalHome = parseInt(document.getElementById(`finalHome_${matchId}`).value);
@@ -3881,9 +3928,10 @@
                     let winnerValue = 0;
                     let penaltyBonus = 0;
                     
-                    // Calcul du bonus penalty (1 point si prédiction penalty correcte)
-                    if (bet.penaltyPrediction && bet.penaltyPrediction === realWinner && finalHome === finalAway) {
-                        penaltyBonus = 1;
+                    // 🎯 Bonus penalty : +2 points UNIQUEMENT si l'utilisateur a prédit un match nul (score égal)
+                    // ET que sa prédiction penalty est correcte
+                    if (bet.penaltyPrediction && bet.penaltyPrediction === realWinner && finalHome === finalAway && bet.homeScore === bet.awayScore) {
+                        penaltyBonus = 2;
                     }
                     
                     if (exactScore) {
@@ -3896,7 +3944,6 @@
                     
                     points = basePoints + penaltyBonus;
                     
-                    // Stocker le détail du calcul
                     const pointsBreakdown = {
                         exactScore: exactScore,
                         correctWinner: (correctWinner || correctWinnerWithPenalty),
@@ -3971,7 +4018,7 @@
         };
 
         // ============================================================
-        // MATCHES USER AVEC PRÉDICTION PENALTY
+        // MATCHES USER AVEC SÉLECTEUR PENALTY DYNAMIQUE
         // ============================================================
         function startMatchCountdown(matchId, matchDateTime, elementId) {
             if (countdownIntervals[matchId]) clearInterval(countdownIntervals[matchId]);
@@ -4001,13 +4048,27 @@
             const awayScore = parseInt(document.getElementById(`away_${matchId}`).value);
             if (isNaN(homeScore) || isNaN(awayScore)) { alert('Entrez des scores valides'); return; }
             
-            const penaltySelect = document.getElementById(`penaltyPrediction_${matchId}`);
-            const penaltyPrediction = penaltySelect ? penaltySelect.value : null;
+            // Récupérer la prédiction penalty UNIQUEMENT si le score est un match nul
+            let penaltyPrediction = null;
+            if (homeScore === awayScore) {
+                const penaltySelect = document.getElementById(`penaltyPrediction_${matchId}`);
+                if (penaltySelect) {
+                    penaltyPrediction = penaltySelect.value || null;
+                }
+            }
+            // Si le score n'est pas nul, on force penaltyPrediction à null
+            // pour éviter qu'un utilisateur ne triche en sélectionnant une option cachée
             
             const existingBet = await db.ref(`pronostics/${userId}/${matchId}`).once('value');
             if (existingBet.exists()) { alert('Pronostic déjà enregistré !'); return; }
             const matchSnap = await db.ref(`matches/${matchId}`).once('value');
             if (matchSnap.val()?.closed) { alert('Match terminé'); return; }
+            
+            // Vérifier que si le score est nul, l'utilisateur a bien sélectionné une option penalty
+            if (homeScore === awayScore && !penaltyPrediction) {
+                // Ce n'est pas bloquant, on enregistre sans prédiction penalty
+                // L'utilisateur ne recevra pas le bonus
+            }
             
             await db.ref(`pronostics/${userId}/${matchId}`).set({
                 homeScore,
@@ -4015,10 +4076,10 @@
                 timestamp: Date.now(),
                 pointsEarned: 0,
                 validated: false,
-                penaltyPrediction: penaltyPrediction || null,
+                penaltyPrediction: penaltyPrediction, // null si le score n'est pas nul ou si non sélectionné
                 pointsBreakdown: null
             });
-            showNotification('Pronostic enregistré !', `${homeScore} — ${awayScore}${penaltyPrediction ? ' (avec prédiction penalty)' : ''}`, 'success');
+            showNotification('Pronostic enregistré !', `${homeScore} — ${awayScore}${penaltyPrediction ? ' (avec prédiction penalty +2)' : ''}`, 'success');
             await loadUserMatchesSeparated(userId);
             await loadUserHistory(userId, 'userHistoryContainer');
             await updateUserBadges(userId);
@@ -4070,10 +4131,9 @@
                             let penaltyPredictionInfo = '';
                             if (existing.penaltyPrediction) {
                                 const teamName = existing.penaltyPrediction === 'home' ? match.homeTeam : match.awayTeam;
-                                penaltyPredictionInfo = `<div style="font-size:12px;color:var(--gold);margin-top:4px;"><i class="fas fa-futbol"></i> Prédiction penalty : ${escapeHtml(teamName)}</div>`;
+                                penaltyPredictionInfo = `<div style="font-size:12px;color:var(--penalty-bonus-color);margin-top:4px;"><i class="fas fa-futbol"></i> Prédiction penalty : ${escapeHtml(teamName)} ${existing.pointsBreakdown?.penaltyBonus > 0 ? '✅ +2 pts' : ''}</div>`;
                             }
                             
-                            // Afficher le détail du calcul
                             let breakdownHtml = '';
                             if (existing.pointsBreakdown) {
                                 const bd = existing.pointsBreakdown;
@@ -4093,8 +4153,8 @@
                                             <span class="value ${bd.correctWinner ? 'green' : 'red'}">${bd.correctWinner ? '+ ' + (bd.winnerValue || 0) : '0'}</span>
                                         </div>
                                         <div class="line">
-                                            <span class="label">Bonus penalty (${bd.penaltyBonus > 0 ? '✅' : '❌'})</span>
-                                            <span class="value ${bd.penaltyBonus > 0 ? 'green' : 'red'}">${bd.penaltyBonus > 0 ? '+1' : '0'}</span>
+                                            <span class="label">🎯 Bonus penalty (${bd.penaltyBonus > 0 ? '✅' : '❌'})</span>
+                                            <span class="value ${bd.penaltyBonus > 0 ? 'penalty-gold' : 'red'}">${bd.penaltyBonus > 0 ? '+2' : '0'}</span>
                                         </div>
                                         <div class="line" style="border-top:2px solid var(--gold);margin-top:4px;padding-top:6px;">
                                             <span class="label"><strong>Total</strong></span>
@@ -4117,22 +4177,23 @@
 
                     hasActive = true;
                     if (!existing && !bettingClosed) {
+                        // Sélecteur penalty : caché par défaut, visible uniquement si les scores sont égaux
                         const penaltyHtml = `
-                            <div class="penalty-prediction">
-                                <label><i class="fas fa-futbol"></i> Si match nul, qui gagne aux tirs au but ?</label>
+                            <div class="penalty-prediction" id="penaltyPredictionContainer_${matchId}">
+                                <label><i class="fas fa-futbol"></i> Si match nul, qui gagne aux tirs au but ? <span class="bonus-badge">+2 pts</span></label>
                                 <select id="penaltyPrediction_${matchId}">
                                     <option value="">-- Je ne sais pas / Sans avis --</option>
                                     <option value="home">${escapeHtml(match.homeTeam)} (Domicile)</option>
                                     <option value="away">${escapeHtml(match.awayTeam)} (Extérieur)</option>
                                 </select>
-                                <div class="hint">💡 1 point bonus si votre prédiction penalty est correcte.</div>
+                                <div class="hint">💡 Le sélecteur apparaît uniquement si vous prévoyez un match nul.</div>
                             </div>
                         `;
                         
                         activeHtml += cardHtml +
                             `<div class="score-inputs">
-                                <div class="score-input"><label>${escapeHtml(match.homeTeam)}</label><input type="number" id="home_${matchId}" placeholder="0" min="0"></div>
-                                <div class="score-input"><label>${escapeHtml(match.awayTeam)}</label><input type="number" id="away_${matchId}" placeholder="0" min="0"></div>
+                                <div class="score-input"><label>${escapeHtml(match.homeTeam)}</label><input type="number" id="home_${matchId}" placeholder="0" min="0" oninput="togglePenaltySelector('${matchId}')"></div>
+                                <div class="score-input"><label>${escapeHtml(match.awayTeam)}</label><input type="number" id="away_${matchId}" placeholder="0" min="0" oninput="togglePenaltySelector('${matchId}')"></div>
                             </div>
                             ${penaltyHtml}
                             <button class="btn btn-primary" onclick="saveBetWithCheck('${matchId}', '${userId}', '${match.datetime}')"><i class="fas fa-save"></i> Enregistrer mon pronostic</button>`;
@@ -4146,7 +4207,7 @@
                         let penaltyPredictionInfo = '';
                         if (existing.penaltyPrediction) {
                             const teamName = existing.penaltyPrediction === 'home' ? match.homeTeam : match.awayTeam;
-                            penaltyPredictionInfo = `<div style="font-size:12px;color:var(--gold);margin-top:4px;"><i class="fas fa-futbol"></i> Prédiction penalty : ${escapeHtml(teamName)}</div>`;
+                            penaltyPredictionInfo = `<div style="font-size:12px;color:var(--penalty-bonus-color);margin-top:4px;"><i class="fas fa-futbol"></i> Prédiction penalty : ${escapeHtml(teamName)}</div>`;
                         }
                         activeHtml += cardHtml +
                             `<div class="bet-info"><i class="fas fa-check-circle" style="color:#10b981;"></i> Votre pronostic : <strong>${existing.homeScore} — ${existing.awayScore}</strong></div>
