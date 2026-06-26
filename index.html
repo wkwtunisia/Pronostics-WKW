@@ -11,8 +11,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
     <!-- SheetJS for Excel Export -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
-    <!-- Chart.js pour graphiques -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- Google Fonts -->
@@ -20,7 +18,7 @@
 
     <style>
         /* ============================================================
-           RESET & BASE — DESIGN REFONDU
+           RESET & BASE
            ============================================================ */
         * {
             margin: 0;
@@ -38,6 +36,8 @@
             --red: #E94560;
             --red-dark: #C62840;
             --white: #FFFFFF;
+            --green: #10b981;
+            --green-dark: #059669;
 
             --bg-primary: radial-gradient(ellipse at 20% 20%, #0F1A3A, #060C1A 70%);
             --bg-secondary: rgba(6, 12, 26, 0.96);
@@ -99,6 +99,9 @@
             --social-icon-hover: var(--gold);
             --radius: 24px;
             --radius-sm: 16px;
+            --chat-notif-badge: #E94560;
+            --breakdown-bg: rgba(255, 215, 0, 0.04);
+            --breakdown-border: rgba(255, 215, 0, 0.08);
         }
 
         /* --- Thème clair --- */
@@ -257,12 +260,11 @@
             --sidebar-subtitle: #4a5568;
             --user-avatar-bg: linear-gradient(135deg, #FFD700, #F59E0B);
             --user-avatar-color: #0B132B;
-            --chat-notif-badge: #E94560;
+            --breakdown-bg: rgba(255, 215, 0, 0.06);
+            --breakdown-border: rgba(255, 215, 0, 0.12);
         }
 
-        html {
-            scroll-behavior: smooth;
-        }
+        html { scroll-behavior: smooth; }
 
         body {
             font-family: 'Inter', sans-serif;
@@ -298,15 +300,12 @@
             transition: opacity 0.5s ease;
         }
 
-        [data-theme="light"] body::before {
-            opacity: 0.15;
-        }
+        [data-theme="light"] body::before { opacity: 0.15; }
 
         @keyframes twinkle {
             0% { opacity: 0.6; }
             100% { opacity: 1; }
         }
-
         [data-theme="light"] @keyframes twinkle {
             0% { opacity: 0.1; }
             100% { opacity: 0.25; }
@@ -351,7 +350,6 @@
             90% { opacity: 0.6; }
             100% { transform: translateY(-10vh) scale(1); opacity: 0; }
         }
-
         [data-theme="light"] @keyframes floatUp {
             0% { transform: translateY(100vh) scale(0); opacity: 0; }
             10% { opacity: 0.3; }
@@ -747,7 +745,6 @@
         .nav-link i { width: 22px; font-size: 17px; text-align: center; }
         .nav-link span { font-weight: 500; }
 
-        /* Badge de notification sur le lien du chat */
         .nav-link .chat-notif-badge {
             position: absolute;
             top: -6px;
@@ -767,9 +764,7 @@
             box-shadow: 0 2px 8px rgba(233, 69, 96, 0.3);
             animation: pulseGold 1.5s infinite;
         }
-        .nav-link .chat-notif-badge.visible {
-            display: flex;
-        }
+        .nav-link .chat-notif-badge.visible { display: flex; }
 
         .sidebar-user {
             margin-top: 28px;
@@ -885,6 +880,37 @@
             font-weight: 700;
         }
         .admin-panel h3 i { color: var(--gold); margin-right: 10px; }
+
+        /* --- PENALTY SELECTOR --- */
+        .penalty-selector {
+            display: none;
+            margin: 12px 0;
+            padding: 14px 18px;
+            background: rgba(255, 215, 0, 0.06);
+            border-radius: var(--radius-sm);
+            border: 2px solid rgba(255, 215, 0, 0.2);
+            text-align: center;
+        }
+        .penalty-selector.visible { display: block; }
+        .penalty-selector label {
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-right: 12px;
+        }
+        .penalty-selector select {
+            padding: 8px 16px;
+            border-radius: 12px;
+            border: 2px solid var(--border-color);
+            background: var(--bg-input);
+            color: var(--text-primary);
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+        }
+        .penalty-selector select:focus {
+            outline: none;
+            border-color: var(--gold);
+        }
 
         /* ============================================================
            FORMULAIRES
@@ -1205,6 +1231,47 @@
         }
         .bet-info i { color: var(--gold); margin-right: 8px; }
 
+        /* --- DÉTAIL DU CALCUL DES POINTS --- */
+        .points-breakdown {
+            background: var(--breakdown-bg);
+            border: 1px solid var(--breakdown-border);
+            border-radius: var(--radius-sm);
+            padding: 12px 16px;
+            margin-top: 8px;
+            font-size: 13px;
+        }
+        .points-breakdown .line {
+            display: flex;
+            justify-content: space-between;
+            padding: 3px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+        .points-breakdown .line:last-child {
+            border-bottom: none;
+            font-weight: 700;
+            color: var(--gold);
+        }
+        .points-breakdown .line .label {
+            color: var(--text-secondary);
+        }
+        .points-breakdown .line .value {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+        .points-breakdown .line .value.green { color: var(--green); }
+        .points-breakdown .line .value.red { color: var(--red); }
+        .points-breakdown .line .value.gold { color: var(--gold); }
+        .points-breakdown .breakdown-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--gold);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .points-breakdown .breakdown-title i { font-size: 14px; }
+
         .points-earned {
             background: var(--points-earned-bg);
             padding: 10px 16px;
@@ -1292,6 +1359,54 @@
             font-size: 14px;
         }
 
+        .penalty-info {
+            font-size: 13px;
+            color: var(--gold);
+            background: rgba(255, 215, 0, 0.08);
+            padding: 6px 12px;
+            border-radius: 40px;
+            display: inline-block;
+            margin-top: 4px;
+            border: 1px solid rgba(255, 215, 0, 0.15);
+        }
+        .penalty-info i { margin-right: 6px; }
+
+        /* --- PRÉDICTION PENALTY POUR L'UTILISATEUR --- */
+        .penalty-prediction {
+            margin-top: 12px;
+            padding: 12px 16px;
+            background: rgba(255, 215, 0, 0.04);
+            border-radius: var(--radius-sm);
+            border: 1px solid rgba(255, 215, 0, 0.1);
+        }
+        .penalty-prediction label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            display: block;
+            margin-bottom: 6px;
+        }
+        .penalty-prediction select {
+            width: 100%;
+            padding: 8px 14px;
+            border-radius: 12px;
+            border: 2px solid var(--border-color);
+            background: var(--bg-input);
+            color: var(--text-primary);
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+        }
+        .penalty-prediction select:focus {
+            outline: none;
+            border-color: var(--gold);
+        }
+        .penalty-prediction .hint {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
         /* ============================================================
            WORLD CUP BET CARD
            ============================================================ */
@@ -1373,24 +1488,15 @@
         .player-card .player-flag { font-size: 28px; display: block; margin-bottom: 6px; }
 
         /* ============================================================
-           HISTORIQUE
-           ============================================================ */
-        .history-item {
-            background: var(--history-item-bg);
-            border-radius: var(--radius-sm);
-            padding: 16px 20px;
-            margin-bottom: 12px;
-            border-left: 4px solid var(--history-item-border, var(--gold));
-            transition: all 0.3s;
-        }
-        .history-item:hover { background: var(--bg-card-hover); transform: translateX(4px); }
-        .history-item strong { color: var(--history-item-strong, #E8EDF5); }
-        .history-item .meta { color: var(--history-item-meta, #8A9BB8); font-size: 12px; margin-top: 4px; }
-
-        /* ============================================================
            BADGES
            ============================================================ */
-        .badge-container { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 16px; }
+        .badge-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin-top: 16px;
+        }
+
         .badge {
             display: inline-flex;
             align-items: center;
@@ -1403,8 +1509,32 @@
             color: var(--badge-color, var(--gold));
             border: 1px solid var(--glass-border);
             transition: all 0.3s;
+            cursor: default;
+            position: relative;
         }
-        .badge:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(255, 215, 0, 0.1); }
+        .badge:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 215, 0, 0.1);
+        }
+        .badge .badge-tooltip {
+            display: none;
+            position: absolute;
+            bottom: calc(100% + 10px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            padding: 8px 14px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 400;
+            white-space: nowrap;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow);
+            z-index: 10;
+        }
+        .badge:hover .badge-tooltip { display: block; }
+
         .badge-locked {
             background: var(--badge-locked-bg, rgba(255, 255, 255, 0.03));
             color: var(--badge-locked-color, #5A6B88);
@@ -1413,7 +1543,19 @@
         }
         .badge-locked:hover { transform: none; box-shadow: none; }
         .badge i { font-size: 18px; }
-        .badge small { font-weight: 400; opacity: 0.7; font-size: 11px; margin-left: 4px; }
+        .badge small {
+            font-weight: 400;
+            opacity: 0.7;
+            font-size: 11px;
+            margin-left: 4px;
+        }
+
+        .badge-progress {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-left: 6px;
+            font-weight: 400;
+        }
 
         /* ============================================================
            CHAT PUBLIC
@@ -1895,7 +2037,6 @@
     AUTH CONTAINER
     ============================================================ -->
     <div id="authContainer" class="auth-container">
-        <!-- Login -->
         <div id="loginForm" class="card">
             <div class="auth-logo">
                 <img src="https://www.electrive.net/media/2017/04/wkw-automotive-logo-symbolbild.png" alt="WKW Automotive Logo" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
@@ -1912,7 +2053,6 @@
             </div>
         </div>
 
-        <!-- Register -->
         <div id="registerForm" class="card" style="display:none;">
             <div class="auth-logo">
                 <img src="https://www.electrive.net/media/2017/04/wkw-automotive-logo-symbolbild.png" alt="WKW Automotive Logo" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
@@ -2352,7 +2492,7 @@
             "Pologne", "République Tchèque", "Autriche", "Turquie", "Canada", "Costa Rica", "Nouvelle-Zélande"
         ];
 
-         const topScorerPlayers = [
+        const topScorerPlayers = [
             { name: "Kylian Mbappé", team: "France", flag: "🇫🇷" },
             { name: "Erling Haaland", team: "Norvège", flag: "🇳🇴" },
             { name: "Harry Kane", team: "Angleterre", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿" },
@@ -2391,84 +2531,55 @@
         let tempFinalResults = {};
         let countdownIntervals = {};
 
+        // ============================================================
+        // BADGES
+        // ============================================================
         const BADGES = [
-            { id: 'first_bet', name: '🏅 Premier pas', description: 'Faire son premier pronostic' },
-            { id: 'streak_3', name: '🔥 En forme', description: '3 pronostics corrects consécutifs' },
-            { id: 'streak_5', name: '⭐ Légende', description: '5 pronostics corrects consécutifs' },
-            { id: 'exact_3', name: '🎯 Précision', description: '3 scores exacts' },
-            { id: 'top_3', name: '🏆 Podium', description: 'Être dans le top 3' }
+            { 
+                id: 'first_bet', 
+                name: '🏅 Premier pas', 
+                description: 'Faire son premier pronostic',
+                icon: 'fa-shoe-prints',
+                unlock: '1 pronostic validé'
+            },
+            { 
+                id: 'streak_3', 
+                name: '🔥 En forme', 
+                description: '3 pronostics corrects consécutifs',
+                icon: 'fa-fire',
+                unlock: '3 pronostics justes d\'affilée'
+            },
+            { 
+                id: 'streak_5', 
+                name: '⭐ Légende', 
+                description: '5 pronostics corrects consécutifs',
+                icon: 'fa-star',
+                unlock: '5 pronostics justes d\'affilée'
+            },
+            { 
+                id: 'exact_3', 
+                name: '🎯 Précision', 
+                description: '3 scores exacts',
+                icon: 'fa-bullseye',
+                unlock: '3 scores exacts trouvés'
+            },
+            { 
+                id: 'top_3', 
+                name: '🏆 Podium', 
+                description: 'Être dans le top 3 du classement',
+                icon: 'fa-crown',
+                unlock: 'Top 3 du classement général'
+            }
         ];
 
         // ============================================================
-        // SYSTEME DE NOTIFICATIONS CHAT
+        // SYSTEME DE NOTIFICATIONS CHAT (in-app uniquement)
         // ============================================================
         let chatUnreadCount = {
             admin: 0,
             user: 0
         };
-        let chatNotificationSound = null;
 
-        // Demander la permission pour les notifications
-        function requestNotificationPermission() {
-            if ('Notification' in window && Notification.permission === 'default') {
-                Notification.requestPermission().then(permission => {
-                    if (permission === 'granted') {
-                        console.log('Notifications push activées');
-                    }
-                });
-            }
-        }
-
-        // Jouer un son de notification (Web Audio API)
-        function playNotificationSound() {
-            try {
-                const audioCtx = new(window.AudioContext || window.webkitAudioContext)();
-                const oscillator = audioCtx.createOscillator();
-                const gainNode = audioCtx.createGain();
-
-                oscillator.connect(gainNode);
-                gainNode.connect(audioCtx.destination);
-
-                oscillator.frequency.value = 800;
-                oscillator.type = 'sine';
-                gainNode.gain.value = 0.15;
-
-                oscillator.start();
-                setTimeout(() => {
-                    oscillator.frequency.value = 1000;
-                }, 100);
-                setTimeout(() => {
-                    oscillator.stop();
-                }, 200);
-            } catch (e) {
-                // Fallback silencieux si l'API Audio n'est pas disponible
-            }
-        }
-
-        // Afficher une notification push
-        function showPushNotification(title, body, icon = '🏆') {
-            if ('Notification' in window && Notification.permission === 'granted') {
-                try {
-                    const notification = new Notification(`💬 ${title}`, {
-                        body: body,
-                        icon: 'data:image/svg+xml,' + encodeURIComponent(`
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-                                <circle cx="50" cy="50" r="45" fill="#FFD700"/>
-                                <text x="50" y="65" text-anchor="middle" font-size="50" font-weight="bold">⚽</text>
-                            </svg>
-                        `),
-                        silent: true,
-                        tag: 'chat-message',
-                        requireInteraction: false
-                    });
-                    setTimeout(() => notification.close(), 5000);
-                } catch (e) {
-                    // Ignorer les erreurs de notification
-                }
-            }
-        }
-
-        // Mettre à jour le badge de notification sur l'onglet chat
         function updateChatBadge(count, isAdmin) {
             const badgeId = isAdmin ? 'adminChatBadge' : 'userChatBadge';
             const badge = document.getElementById(badgeId);
@@ -2477,7 +2588,6 @@
             if (count > 0) {
                 badge.textContent = count > 9 ? '9+' : count;
                 badge.classList.add('visible');
-                // Animation de pulsation
                 badge.style.animation = 'none';
                 setTimeout(() => {
                     badge.style.animation = 'pulseGold 0.5s ease 3';
@@ -2487,7 +2597,6 @@
             }
         }
 
-        // Incrémenter le compteur de messages non lus
         function incrementChatUnread(isAdmin) {
             if (isAdmin) {
                 chatUnreadCount.admin++;
@@ -2498,7 +2607,6 @@
             }
         }
 
-        // Réinitialiser le compteur quand on ouvre le chat
         function resetChatUnread(isAdmin) {
             if (isAdmin) {
                 chatUnreadCount.admin = 0;
@@ -2678,7 +2786,7 @@
         }
 
         // ============================================================
-        // CHAT PUBLIC AVEC NOTIFICATIONS
+        // CHAT PUBLIC (in-app notifications uniquement)
         // ============================================================
         function setupChat(userId, username, isAdmin = false) {
             const messagesContainer = isAdmin ? document.getElementById('chatMessagesAdmin') : document.getElementById(
@@ -2690,7 +2798,6 @@
 
             const chatRef = db.ref('chatMessages');
 
-            // Réinitialiser le compteur quand on ouvre le chat
             const chatNavLink = isAdmin ? document.getElementById('adminChatNav') : document.getElementById('userChatNav');
             if (chatNavLink) {
                 chatNavLink.addEventListener('click', () => {
@@ -2698,7 +2805,6 @@
                 });
             }
 
-            // Fonction pour envoyer un message
             async function sendMessage() {
                 const text = input.value.trim();
                 if (!text) return;
@@ -2717,7 +2823,6 @@
                     });
                     input.value = '';
                     input.focus();
-                    // Réinitialiser le compteur quand l'utilisateur envoie un message (il a vu le chat)
                     resetChatUnread(isAdmin);
                 } catch (e) {
                     showNotification('Erreur', 'Impossible d\'envoyer le message: ' + e.message, 'error');
@@ -2732,16 +2837,12 @@
                 }
             });
 
-            // Écouter les messages en temps réel
-            let lastMessageTimestamp = 0;
             chatRef.orderByChild('timestamp').limitToLast(100).on('child_added', (snapshot) => {
                 const data = snapshot.val();
                 if (!data) return;
 
-                // Vérifier si le message est de l'utilisateur courant
                 const isOwnMessage = (data.uid === userId);
 
-                // Supprimer le message vide initial
                 const emptyMsg = messagesContainer.querySelector('.chat-empty');
                 if (emptyMsg) emptyMsg.remove();
 
@@ -2772,23 +2873,8 @@
                 messagesContainer.appendChild(msgDiv);
                 messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
-                // ============================================
-                // GÉRER LES NOTIFICATIONS
-                // ============================================
-                // Ne pas notifier les messages de l'utilisateur lui-même
                 if (!isOwnMessage) {
-                    // Incrémenter le compteur de messages non lus
                     incrementChatUnread(isAdmin);
-
-                    // Jouer un son
-                    playNotificationSound();
-
-                    // Afficher une notification push
-                    const notifTitle = data.isAdmin ? 'Admin' : data.username;
-                    const notifBody = data.message.length > 60 ? data.message.substring(0, 60) + '...' : data.message;
-                    showPushNotification(notifTitle, notifBody);
-
-                    // Afficher une notification in-app
                     showNotification(
                         `💬 ${escapeHtml(data.username)}`,
                         escapeHtml(data.message.length > 100 ? data.message.substring(0, 100) + '...' : data.message),
@@ -2797,7 +2883,6 @@
                 }
             });
 
-            // Nettoyer les anciens messages (garder les 100 derniers)
             chatRef.once('value', (snap) => {
                 const msgs = snap.val();
                 if (!msgs) return;
@@ -2821,11 +2906,11 @@
             modal.innerHTML = `
                 <div class="tutorial-content">
                     <h2><i class="fas fa-graduation-cap"></i> Bienvenue sur Pronostics WKW!</h2>
-                    <div class="tutorial-step"><div class="tutorial-step-icon">1</div><div class="tutorial-step-text"><strong>📅 Choisissez un match</strong><span>Sélectionnez un match à venir dans la liste</span></div></div>
-                    <div class="tutorial-step"><div class="tutorial-step-icon">2</div><div class="tutorial-step-text"><strong>🎯 Entrez votre pronostic</strong><span>Indiquez le score que vous prévoyez (30 min avant le match)</span></div></div>
-                    <div class="tutorial-step"><div class="tutorial-step-icon">3</div><div class="tutorial-step-text"><strong>💬 Chattez</strong><span>Échangez avec les autres participants dans le chat public</span></div></div>
-                    <div class="tutorial-step"><div class="tutorial-step-icon">🔔</div><div class="tutorial-step-text"><strong>Notifications</strong><span>Recevez des alertes en temps réel quand quelqu'un écrit</span></div></div>
-                    <div class="tutorial-step"><div class="tutorial-step-icon">🏆</div><div class="tutorial-step-text"><strong>Débloquez des badges</strong><span>Succession de bons pronostics = badges spéciaux!</span></div></div>
+                    <div class="tutorial-step"><div class="tutorial-step-icon">1</div><div class="tutorial-step-text"><strong>📅 Choisissez un match</strong><span>Sélectionnez un match à venir</span></div></div>
+                    <div class="tutorial-step"><div class="tutorial-step-icon">2</div><div class="tutorial-step-text"><strong>🎯 Entrez votre pronostic</strong><span>Indiquez le score (30 min avant le match)</span></div></div>
+                    <div class="tutorial-step"><div class="tutorial-step-icon">⚽</div><div class="tutorial-step-text"><strong>Prédisez les penalties</strong><span>En cas de match nul, choisissez le vainqueur</span></div></div>
+                    <div class="tutorial-step"><div class="tutorial-step-icon">📊</div><div class="tutorial-step-text"><strong>Calcul des points</strong><span>Chaque détail est affiché : score exact, vainqueur, bonus penalty</span></div></div>
+                    <div class="tutorial-step"><div class="tutorial-step-icon">🏆</div><div class="tutorial-step-text"><strong>Badges</strong><span>Débloquez des badges en progressant !</span></div></div>
                     <div class="tutorial-buttons"><button id="tutorialGotIt">J'ai compris !</button><button id="tutorialDontShow">Ne plus afficher</button></div>
                 </div>
             `;
@@ -2859,7 +2944,7 @@
         }
 
         // ============================================================
-        // BADGES
+        // BADGES - AFFICHAGE CLAIR
         // ============================================================
         async function updateUserBadges(userId) {
             try {
@@ -2903,22 +2988,69 @@
                 const userSnap = await db.ref(`users/${userId}`).once('value');
                 const user = userSnap.val();
                 const badges = user?.badges || [];
-                let html = '<div class="badge-container">';
+                
+                const betsSnap = await db.ref(`pronostics/${userId}`).once('value');
+                const bets = betsSnap.val() || {};
+                let totalBets = 0, exactScores = 0, currentStreak = 0, maxStreak = 0;
+                for (let matchId in bets) {
+                    const bet = bets[matchId];
+                    if (bet.validated) {
+                        totalBets++;
+                        if (bet.pointsEarned > 0) {
+                            if (bet.pointsEarned >= 10) exactScores++;
+                            currentStreak++;
+                            maxStreak = Math.max(maxStreak, currentStreak);
+                        } else currentStreak = 0;
+                    }
+                }
+                const usersSnap = await db.ref('users').once('value');
+                const users = usersSnap.val() || {};
+                let rank = 1;
+                const userPoints = users[userId]?.totalPoints || 0;
+                for (let uid in users) {
+                    if (users[uid]?.totalPoints > userPoints && uid !== userId) rank++;
+                }
+
+                let html = `
+                    <div style="margin-bottom:12px;padding:12px 16px;background:var(--bg-glass);border-radius:12px;border:1px solid var(--glass-border);">
+                        <p style="color:var(--text-secondary);font-size:13px;">
+                            <i class="fas fa-info-circle" style="color:var(--gold);"></i> 
+                            Les badges sont débloqués automatiquement en fonction de vos performances.
+                        </p>
+                    </div>
+                    <div class="badge-container">`;
+
                 for (const badge of BADGES) {
                     const earned = badges.includes(badge.id);
+                    let progress = '';
+                    if (badge.id === 'first_bet') {
+                        progress = `${totalBets}/1 pronostics`;
+                    } else if (badge.id === 'streak_3') {
+                        progress = `${maxStreak}/3 consécutifs`;
+                    } else if (badge.id === 'streak_5') {
+                        progress = `${maxStreak}/5 consécutifs`;
+                    } else if (badge.id === 'exact_3') {
+                        progress = `${exactScores}/3 scores exacts`;
+                    } else if (badge.id === 'top_3') {
+                        progress = `${rank <= 3 ? '✅ Top 3' : `#${rank}/3`}`;
+                    }
+
                     html += `<div class="badge ${!earned ? 'badge-locked' : ''}">
-                        <i class="fas ${earned ? 'fa-award' : 'fa-lock'}"></i> ${badge.name}
+                        <i class="fas ${earned ? badge.icon : 'fa-lock'}"></i> 
+                        ${badge.name}
                         <small>${badge.description}</small>
+                        <span class="badge-progress">(${progress})</span>
+                        ${!earned ? `<span class="badge-tooltip">🔒 Débloque : ${badge.unlock}</span>` : ''}
                     </div>`;
                 }
                 html += '</div>';
                 const container = document.getElementById(containerId);
                 if (container) container.innerHTML = html;
-            } catch (e) {}
+            } catch (e) { console.warn(e); }
         }
 
         // ============================================================
-        // HISTORIQUE
+        // HISTORIQUE AVEC DÉTAIL DES POINTS
         // ============================================================
         async function loadUserHistory(userId, containerId) {
             try {
@@ -2934,17 +3066,62 @@
                     const matchSnap = await db.ref(`matches/${matchId}`).once('value');
                     const match = matchSnap.val();
                     if (match) {
+                        let penaltyInfo = '';
+                        if (bet.penaltyPrediction) {
+                            const teamName = bet.penaltyPrediction === 'home' ? match.homeTeam : match.awayTeam;
+                            penaltyInfo = `<span class="penalty-info"><i class="fas fa-futbol"></i> Prédiction penalty : ${escapeHtml(teamName)}</span>`;
+                        }
+                        
+                        // Construire le détail du calcul des points
+                        let breakdownHtml = '';
+                        if (bet.validated && bet.pointsEarned !== undefined) {
+                            const bd = bet.pointsBreakdown || {};
+                            const basePoints = bd.basePoints || 0;
+                            const penaltyBonus = bd.penaltyBonus || 0;
+                            const exactScore = bd.exactScore || false;
+                            const correctWinner = bd.correctWinner || false;
+                            const multiplier = bd.multiplier || 1;
+                            const total = bet.pointsEarned || 0;
+                            
+                            breakdownHtml = `
+                                <div class="points-breakdown">
+                                    <div class="breakdown-title"><i class="fas fa-calculator"></i> Détail du calcul</div>
+                                    <div class="line">
+                                        <span class="label">Multiplicateur (match spéciaux)</span>
+                                        <span class="value">x${multiplier}</span>
+                                    </div>
+                                    <div class="line">
+                                        <span class="label">Score exact (${exactScore ? '✅ Oui' : '❌ Non'})</span>
+                                        <span class="value ${exactScore ? 'green' : 'red'}">${exactScore ? '+ ' + (bd.exactScoreValue || 0) : '0'}</span>
+                                    </div>
+                                    <div class="line">
+                                        <span class="label">Vainqueur correct (${correctWinner ? '✅ Oui' : '❌ Non'})</span>
+                                        <span class="value ${correctWinner ? 'green' : 'red'}">${correctWinner ? '+ ' + (bd.winnerValue || 0) : '0'}</span>
+                                    </div>
+                                    <div class="line">
+                                        <span class="label">Bonus penalty (${penaltyBonus > 0 ? '✅ Gagné' : '❌ Non'})</span>
+                                        <span class="value ${penaltyBonus > 0 ? 'green' : 'red'}">${penaltyBonus > 0 ? '+1' : '0'}</span>
+                                    </div>
+                                    <div class="line" style="border-top:2px solid var(--gold);margin-top:4px;padding-top:6px;">
+                                        <span class="label"><strong>Total</strong></span>
+                                        <span class="value gold"><strong>${total} pts</strong></span>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                        
                         html += `<div class="history-item">
                             <strong>${escapeHtml(match.homeTeam)} 🆚 ${escapeHtml(match.awayTeam)}</strong>
                             <br>Pronostic: ${bet.homeScore} — ${bet.awayScore}
-                            <br><span class="point-badge">${bet.pointsEarned || 0} pts</span>
+                            ${penaltyInfo}
+                            ${breakdownHtml}
                             <div class="meta">${new Date(bet.timestamp).toLocaleString()}</div>
                         </div>`;
                     }
                 }
                 const container = document.getElementById(containerId);
                 if (container) container.innerHTML = html;
-            } catch (e) {}
+            } catch (e) { console.warn(e); }
         }
 
         // ============================================================
@@ -3532,7 +3709,7 @@
         };
 
         // ============================================================
-        // MATCHES ADMIN
+        // MATCHES ADMIN AVEC GESTION DES TIRS AU BUT + DÉTAIL POINTS
         // ============================================================
         async function loadAdminMatchesWithPredictions() {
             try {
@@ -3567,6 +3744,9 @@
                         `${matchId}_home`] : (match.finalHome ?? '');
                     const displayAway = tempFinalResults[`${matchId}_away`] !== undefined ? tempFinalResults[
                         `${matchId}_away`] : (match.finalAway ?? '');
+                    
+                    const isDraw = (parseInt(displayHome) === parseInt(displayAway)) && displayHome !== '' && displayAway !== '';
+                    const penaltyWinner = match.penaltyWinner || '';
 
                     html += `<div class="match-admin-card">
                         <div class="match-teams">🏆 ${escapeHtml(match.homeTeam)} <i class="fas fa-times"></i> ${escapeHtml(match.awayTeam)} ${match.isSpecial ? '<span class="special-badge">🌟 Spécial x2</span>' : ''}${match.closed ? '<span class="completed-badge">Terminé</span>' : ''}</div>
@@ -3574,12 +3754,22 @@
                         <div class="points-config" style="margin:10px 0;padding:12px 16px;text-align:center;">🏆 Vainqueur = ${match.winnerPoints || 5} pts | 🎯 Score exact = ${match.exactScorePoints || 10} pts ${match.isSpecial ? '<strong style="color:var(--gold);">(x2)</strong>' : ''}</div>
                         <div class="final-result-section">
                             <div class="final-result">
-                                <input type="number" id="finalHome_${matchId}" value="${displayHome}" placeholder="0" onchange="tempFinalResults['${matchId}_home']=this.value">
+                                <input type="number" id="finalHome_${matchId}" value="${displayHome}" placeholder="0" onchange="checkDraw('${matchId}')">
                                 <span class="vs-badge">VS</span>
-                                <input type="number" id="finalAway_${matchId}" value="${displayAway}" placeholder="0" onchange="tempFinalResults['${matchId}_away']=this.value">
+                                <input type="number" id="finalAway_${matchId}" value="${displayAway}" placeholder="0" onchange="checkDraw('${matchId}')">
                                 <button class="btn-primary" style="padding:8px 18px;border-radius:12px;font-size:14px;width:auto;" onclick="validateMatchResult('${matchId}')"><i class="fas fa-check"></i> Valider</button>
                                 <button class="btn-secondary" style="padding:8px 18px;border-radius:12px;font-size:14px;width:auto;" onclick="resetMatchPoints('${matchId}')"><i class="fas fa-undo"></i> Reset</button>
                             </div>
+                            <div class="penalty-selector ${isDraw && !match.closed ? 'visible' : ''}" id="penaltySelector_${matchId}">
+                                <label><i class="fas fa-futbol"></i> ⚽ Tir au but - Vainqueur :</label>
+                                <select id="penaltyWinner_${matchId}">
+                                    <option value="">-- Sélectionner --</option>
+                                    <option value="home" ${penaltyWinner === 'home' ? 'selected' : ''}>${escapeHtml(match.homeTeam)} (Domicile)</option>
+                                    <option value="away" ${penaltyWinner === 'away' ? 'selected' : ''}>${escapeHtml(match.awayTeam)} (Extérieur)</option>
+                                </select>
+                                <span style="font-size:12px;color:var(--text-muted);margin-left:8px;">(Si match nul)</span>
+                            </div>
+                            ${match.closed && match.penaltyWinner ? `<div class="penalty-info"><i class="fas fa-futbol"></i> Victoire aux tirs au but : <strong>${escapeHtml(match.penaltyWinner === 'home' ? match.homeTeam : match.awayTeam)}</strong></div>` : ''}
                         </div>
                         <div style="margin-top:16px;">
                             <strong style="color:var(--text-secondary);"><i class="fas fa-users"></i> Pronostics (${matchPronostics.length}) :</strong>
@@ -3595,12 +3785,22 @@
                         matchPronostics.forEach(p => {
                             const pointsEarned = p.bet.pointsEarned || 0;
                             const validated = p.bet.validated ? '✅ Oui' : '⏳ Non';
+                            // Afficher le détail du calcul dans l'admin
+                            let detail = '';
+                            if (p.bet.validated && p.bet.pointsBreakdown) {
+                                const bd = p.bet.pointsBreakdown;
+                                const parts = [];
+                                if (bd.exactScore) parts.push('Score exact');
+                                if (bd.correctWinner) parts.push('Vainqueur');
+                                if (bd.penaltyBonus > 0) parts.push('Bonus penalty');
+                                detail = parts.join(' + ') || 'Aucun';
+                            }
                             html += `<tr>
                                 <td><i class="fas fa-user-circle"></i> ${escapeHtml(p.userName)}</td>
                                 <td>${escapeHtml(p.department)}</td>
                                 <td><strong>${p.bet.homeScore} — ${p.bet.awayScore}</strong></td>
                                 <td><span class="point-badge">${pointsEarned} pts</span></td>
-                                <td>${validated}</td>
+                                <td>${validated}${detail ? `<br><small style="color:var(--text-muted);font-size:10px;">${detail}</small>` : ''}</td>
                             </tr>`;
                         });
                     }
@@ -3611,10 +3811,42 @@
             } catch (e) { console.warn(e); }
         }
 
+        window.checkDraw = function(matchId) {
+            const homeInput = document.getElementById(`finalHome_${matchId}`);
+            const awayInput = document.getElementById(`finalAway_${matchId}`);
+            const penaltySelector = document.getElementById(`penaltySelector_${matchId}`);
+            
+            if (!homeInput || !awayInput || !penaltySelector) return;
+            
+            const home = parseInt(homeInput.value);
+            const away = parseInt(awayInput.value);
+            
+            if (!isNaN(home) && !isNaN(away) && home === away) {
+                penaltySelector.classList.add('visible');
+            } else {
+                penaltySelector.classList.remove('visible');
+            }
+        };
+
+        // ============================================================
+        // VALIDATION DES MATCHS AVEC DÉTAIL DES POINTS
+        // ============================================================
         window.validateMatchResult = async (matchId) => {
             const finalHome = parseInt(document.getElementById(`finalHome_${matchId}`).value);
             const finalAway = parseInt(document.getElementById(`finalAway_${matchId}`).value);
             if (isNaN(finalHome) || isNaN(finalAway)) { alert('Entrez un score valide'); return; }
+
+            let penaltyWinner = null;
+            if (finalHome === finalAway) {
+                const penaltySelect = document.getElementById(`penaltyWinner_${matchId}`);
+                if (!penaltySelect) { alert('Erreur: sélecteur de penalty non trouvé'); return; }
+                penaltyWinner = penaltySelect.value;
+                if (!penaltyWinner) {
+                    alert('⚠️ Match nul ! Veuillez sélectionner le vainqueur aux tirs au but.');
+                    return;
+                }
+            }
+
             const matchSnap = await db.ref(`matches/${matchId}`).once('value');
             const match = matchSnap.val();
             const winnerPoints = match.winnerPoints || 5;
@@ -3624,32 +3856,83 @@
             const allBets = betsSnap.val() || {};
             const updates = {};
             const affectedUsers = new Set();
+
             for (const [userId, bets] of Object.entries(allBets)) {
                 if (bets && bets[matchId]) {
                     const bet = bets[matchId];
                     let points = 0;
                     const exactScore = (bet.homeScore === finalHome && bet.awayScore === finalAway);
-                    const correctWinner = ((finalHome > finalAway && bet.homeScore > bet.awayScore) ||
-                        (finalAway > finalHome && bet.awayScore > bet.homeScore) ||
-                        (finalHome === finalAway && bet.homeScore === bet.awayScore));
-                    if (exactScore) points = exactScorePoints * multiplier;
-                    else if (correctWinner) points = winnerPoints * multiplier;
+                    
+                    let realWinner = null;
+                    if (finalHome > finalAway) realWinner = 'home';
+                    else if (finalAway > finalHome) realWinner = 'away';
+                    else if (penaltyWinner) realWinner = penaltyWinner;
+                    
+                    let betWinner = null;
+                    if (bet.homeScore > bet.awayScore) betWinner = 'home';
+                    else if (bet.awayScore > bet.homeScore) betWinner = 'away';
+                    else if (bet.homeScore === bet.awayScore) betWinner = 'draw';
+                    
+                    const correctWinner = (realWinner === betWinner);
+                    const correctWinnerWithPenalty = (finalHome === finalAway && betWinner === realWinner);
+                    
+                    let basePoints = 0;
+                    let exactScoreValue = 0;
+                    let winnerValue = 0;
+                    let penaltyBonus = 0;
+                    
+                    // Calcul du bonus penalty (1 point si prédiction penalty correcte)
+                    if (bet.penaltyPrediction && bet.penaltyPrediction === realWinner && finalHome === finalAway) {
+                        penaltyBonus = 1;
+                    }
+                    
+                    if (exactScore) {
+                        exactScoreValue = exactScorePoints * multiplier;
+                        basePoints = exactScoreValue;
+                    } else if (correctWinner || correctWinnerWithPenalty) {
+                        winnerValue = winnerPoints * multiplier;
+                        basePoints = winnerValue;
+                    }
+                    
+                    points = basePoints + penaltyBonus;
+                    
+                    // Stocker le détail du calcul
+                    const pointsBreakdown = {
+                        exactScore: exactScore,
+                        correctWinner: (correctWinner || correctWinnerWithPenalty),
+                        exactScoreValue: exactScoreValue,
+                        winnerValue: winnerValue,
+                        penaltyBonus: penaltyBonus,
+                        basePoints: basePoints,
+                        multiplier: multiplier,
+                        total: points
+                    };
+                    
                     updates[`pronostics/${userId}/${matchId}/pointsEarned`] = points;
                     updates[`pronostics/${userId}/${matchId}/validated`] = true;
+                    updates[`pronostics/${userId}/${matchId}/pointsBreakdown`] = pointsBreakdown;
                     affectedUsers.add(userId);
                 }
             }
+
             updates[`matches/${matchId}/finalHome`] = finalHome;
             updates[`matches/${matchId}/finalAway`] = finalAway;
             updates[`matches/${matchId}/closed`] = true;
+            if (penaltyWinner) {
+                updates[`matches/${matchId}/penaltyWinner`] = penaltyWinner;
+            }
+
             await db.ref().update(updates);
             delete tempFinalResults[`${matchId}_home`];
             delete tempFinalResults[`${matchId}_away`];
+
             for (let userId of affectedUsers) {
                 await recalcUserTotalPoints(userId);
                 await updateUserBadges(userId);
             }
-            showNotification('Résultat validé', `${finalHome}-${finalAway} — Points attribués !`, 'success');
+
+            const penaltyMsg = penaltyWinner ? ` (Tirs au but: ${match[penaltyWinner === 'home' ? 'homeTeam' : 'awayTeam']})` : '';
+            showNotification('Résultat validé', `${finalHome}-${finalAway} — Points attribués !${penaltyMsg}`, 'success');
             await loadCompleteRanking('usersRankingContainer');
             await loadCompleteRanking('userRankingContainer');
             await loadAdminMatchesWithPredictions();
@@ -3666,12 +3949,14 @@
                 if (bets && bets[matchId]) {
                     updates[`pronostics/${userId}/${matchId}/pointsEarned`] = 0;
                     updates[`pronostics/${userId}/${matchId}/validated`] = false;
+                    updates[`pronostics/${userId}/${matchId}/pointsBreakdown`] = null;
                     affectedUsers.add(userId);
                 }
             }
             updates[`matches/${matchId}/finalHome`] = null;
             updates[`matches/${matchId}/finalAway`] = null;
             updates[`matches/${matchId}/closed`] = false;
+            updates[`matches/${matchId}/penaltyWinner`] = null;
             await db.ref().update(updates);
             for (let uid of affectedUsers) {
                 await recalcUserTotalPoints(uid);
@@ -3686,7 +3971,7 @@
         };
 
         // ============================================================
-        // MATCHES USER
+        // MATCHES USER AVEC PRÉDICTION PENALTY
         // ============================================================
         function startMatchCountdown(matchId, matchDateTime, elementId) {
             if (countdownIntervals[matchId]) clearInterval(countdownIntervals[matchId]);
@@ -3715,18 +4000,25 @@
             const homeScore = parseInt(document.getElementById(`home_${matchId}`).value);
             const awayScore = parseInt(document.getElementById(`away_${matchId}`).value);
             if (isNaN(homeScore) || isNaN(awayScore)) { alert('Entrez des scores valides'); return; }
+            
+            const penaltySelect = document.getElementById(`penaltyPrediction_${matchId}`);
+            const penaltyPrediction = penaltySelect ? penaltySelect.value : null;
+            
             const existingBet = await db.ref(`pronostics/${userId}/${matchId}`).once('value');
             if (existingBet.exists()) { alert('Pronostic déjà enregistré !'); return; }
             const matchSnap = await db.ref(`matches/${matchId}`).once('value');
             if (matchSnap.val()?.closed) { alert('Match terminé'); return; }
+            
             await db.ref(`pronostics/${userId}/${matchId}`).set({
                 homeScore,
                 awayScore,
                 timestamp: Date.now(),
                 pointsEarned: 0,
-                validated: false
+                validated: false,
+                penaltyPrediction: penaltyPrediction || null,
+                pointsBreakdown: null
             });
-            showNotification('Pronostic enregistré !', `${homeScore} — ${awayScore}`, 'success');
+            showNotification('Pronostic enregistré !', `${homeScore} — ${awayScore}${penaltyPrediction ? ' (avec prédiction penalty)' : ''}`, 'success');
             await loadUserMatchesSeparated(userId);
             await loadUserHistory(userId, 'userHistoryContainer');
             await updateUserBadges(userId);
@@ -3761,9 +4053,13 @@
                     const multiplier = match.isSpecial ? 2 : 1;
                     const bettingClosed = !isClosed && isMatchClosedForBetting(match.datetime);
 
+                    const penaltyInfo = match.penaltyWinner ? 
+                        `<div class="penalty-info"><i class="fas fa-futbol"></i> Vainqueur aux tirs au but : ${escapeHtml(match.penaltyWinner === 'home' ? match.homeTeam : match.awayTeam)}</div>` : '';
+
                     const cardHtml = `<div class="match-card">
                         <div class="match-teams">🏆 ${escapeHtml(match.homeTeam)} <i class="fas fa-times"></i> ${escapeHtml(match.awayTeam)} 🏆${match.isSpecial ? '<span class="special-badge">🌟 Match décisif x2</span>' : ''}</div>
                         <div class="match-date"><i class="far fa-calendar"></i> ${escapeHtml(match.datetime)}${match.finalHome !== null ? ` (Résultat: ${match.finalHome}-${match.finalAway})` : ''}</div>
+                        ${penaltyInfo}
                         <div class="points-config" style="text-align:center;margin:8px 0;padding:10px 14px;">🏆 Vainqueur=${(match.winnerPoints || 5) * multiplier} pts | 🎯 Score exact=${(match.exactScorePoints || 10) * multiplier} pts</div>
                         <div id="countdown_${matchId}"></div>`;
 
@@ -3771,8 +4067,45 @@
                         hasCompleted = true;
                         let extraInfo = '';
                         if (existing && existing.validated) {
+                            let penaltyPredictionInfo = '';
+                            if (existing.penaltyPrediction) {
+                                const teamName = existing.penaltyPrediction === 'home' ? match.homeTeam : match.awayTeam;
+                                penaltyPredictionInfo = `<div style="font-size:12px;color:var(--gold);margin-top:4px;"><i class="fas fa-futbol"></i> Prédiction penalty : ${escapeHtml(teamName)}</div>`;
+                            }
+                            
+                            // Afficher le détail du calcul
+                            let breakdownHtml = '';
+                            if (existing.pointsBreakdown) {
+                                const bd = existing.pointsBreakdown;
+                                breakdownHtml = `
+                                    <div class="points-breakdown">
+                                        <div class="breakdown-title"><i class="fas fa-calculator"></i> Détail du calcul</div>
+                                        <div class="line">
+                                            <span class="label">Multiplicateur</span>
+                                            <span class="value">x${bd.multiplier || 1}</span>
+                                        </div>
+                                        <div class="line">
+                                            <span class="label">Score exact (${bd.exactScore ? '✅' : '❌'})</span>
+                                            <span class="value ${bd.exactScore ? 'green' : 'red'}">${bd.exactScore ? '+ ' + (bd.exactScoreValue || 0) : '0'}</span>
+                                        </div>
+                                        <div class="line">
+                                            <span class="label">Vainqueur correct (${bd.correctWinner ? '✅' : '❌'})</span>
+                                            <span class="value ${bd.correctWinner ? 'green' : 'red'}">${bd.correctWinner ? '+ ' + (bd.winnerValue || 0) : '0'}</span>
+                                        </div>
+                                        <div class="line">
+                                            <span class="label">Bonus penalty (${bd.penaltyBonus > 0 ? '✅' : '❌'})</span>
+                                            <span class="value ${bd.penaltyBonus > 0 ? 'green' : 'red'}">${bd.penaltyBonus > 0 ? '+1' : '0'}</span>
+                                        </div>
+                                        <div class="line" style="border-top:2px solid var(--gold);margin-top:4px;padding-top:6px;">
+                                            <span class="label"><strong>Total</strong></span>
+                                            <span class="value gold"><strong>${existing.pointsEarned || 0} pts</strong></span>
+                                        </div>
+                                    </div>
+                                `;
+                            }
+                            
                             extraInfo =
-                                `<div class="points-earned"><i class="fas fa-star"></i> Points gagnés : ${existing.pointsEarned || 0} pts</div>`;
+                                `<div class="points-earned"><i class="fas fa-star"></i> Points gagnés : ${existing.pointsEarned || 0} pts</div>${penaltyPredictionInfo}${breakdownHtml}`;
                         } else if (!existing) {
                             extraInfo = `<div class="bet-info"><i class="fas fa-times-circle"></i> Match terminé — Vous n'avez pas pronostiqué</div>`;
                         } else {
@@ -3784,11 +4117,24 @@
 
                     hasActive = true;
                     if (!existing && !bettingClosed) {
+                        const penaltyHtml = `
+                            <div class="penalty-prediction">
+                                <label><i class="fas fa-futbol"></i> Si match nul, qui gagne aux tirs au but ?</label>
+                                <select id="penaltyPrediction_${matchId}">
+                                    <option value="">-- Je ne sais pas / Sans avis --</option>
+                                    <option value="home">${escapeHtml(match.homeTeam)} (Domicile)</option>
+                                    <option value="away">${escapeHtml(match.awayTeam)} (Extérieur)</option>
+                                </select>
+                                <div class="hint">💡 1 point bonus si votre prédiction penalty est correcte.</div>
+                            </div>
+                        `;
+                        
                         activeHtml += cardHtml +
                             `<div class="score-inputs">
                                 <div class="score-input"><label>${escapeHtml(match.homeTeam)}</label><input type="number" id="home_${matchId}" placeholder="0" min="0"></div>
                                 <div class="score-input"><label>${escapeHtml(match.awayTeam)}</label><input type="number" id="away_${matchId}" placeholder="0" min="0"></div>
                             </div>
+                            ${penaltyHtml}
                             <button class="btn btn-primary" onclick="saveBetWithCheck('${matchId}', '${userId}', '${match.datetime}')"><i class="fas fa-save"></i> Enregistrer mon pronostic</button>`;
                         startMatchCountdown(matchId, match.datetime, `countdown_${matchId}`);
                         activeHtml += `</div>`;
@@ -3797,8 +4143,14 @@
                             `<div class="bet-info" style="background:rgba(233,69,96,0.06);border-color:rgba(233,69,96,0.08);"><i class="fas fa-lock" style="color:#E94560;"></i> 🔒 Paris fermés — Match dans moins de 30 minutes</div></div>`;
                         startMatchCountdown(matchId, match.datetime, `countdown_${matchId}`);
                     } else if (existing) {
+                        let penaltyPredictionInfo = '';
+                        if (existing.penaltyPrediction) {
+                            const teamName = existing.penaltyPrediction === 'home' ? match.homeTeam : match.awayTeam;
+                            penaltyPredictionInfo = `<div style="font-size:12px;color:var(--gold);margin-top:4px;"><i class="fas fa-futbol"></i> Prédiction penalty : ${escapeHtml(teamName)}</div>`;
+                        }
                         activeHtml += cardHtml +
                             `<div class="bet-info"><i class="fas fa-check-circle" style="color:#10b981;"></i> Votre pronostic : <strong>${existing.homeScore} — ${existing.awayScore}</strong></div>
+                            ${penaltyPredictionInfo}
                             <div class="bet-info"><i class="fas fa-lock"></i> Pronostic verrouillé — Modification impossible</div>`;
                         startMatchCountdown(matchId, match.datetime, `countdown_${matchId}`);
                         activeHtml += `</div>`;
@@ -3844,8 +4196,6 @@
                     setupChat(user.uid, 'Administrateur', true);
                     showNotification('Bienvenue Admin', 'Connecté avec succès', 'success');
                     startTopScorerCountdown();
-                    // Demander la permission pour les notifications
-                    requestNotificationPermission();
                 } else {
                     userDashboard.classList.remove('hidden');
                     adminDashboard.classList.add('hidden');
@@ -3879,8 +4229,6 @@
                     setupChat(user.uid, username, false);
                     showTutorial();
                     showNotification('Bienvenue !', 'Connecté avec succès', 'success');
-                    // Demander la permission pour les notifications
-                    requestNotificationPermission();
                 }
             } else {
                 authContainer.style.display = 'flex';
@@ -3956,7 +4304,8 @@
                 closed: false,
                 winnerPoints: winnerPoints,
                 exactScorePoints: exactScorePoints,
-                isSpecial: isSpecial
+                isSpecial: isSpecial,
+                penaltyWinner: null
             });
             document.getElementById('homeTeam').value = '';
             document.getElementById('awayTeam').value = '';
